@@ -5,7 +5,7 @@ source ./scripts/config_env.sh
 source ./scripts/deployer.sh
 
 function welcome {
-  echo -e "${GREEN}"
+  echo -e "${RESET}"
   echo -e "============================================================="
   echo -e "Payment Hub  EE x Mojaloop Installer"
   echo -e "============================================================="
