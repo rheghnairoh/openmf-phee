@@ -198,13 +198,14 @@ function add_helm_repos {
 }
 
 function verify_user {
+    log INFO "k8s user is $k8s_user"
     # ensure that the user for k8s exists
     if [ -z ${k8s_user+x} ]; then
         log ERROR "Installation user not set with the -u flag \nNote: The user must not be root."
         exit 1
     fi
 
-    if [[ "$EUID" = 0 ]]; then
+    if [[ $(id -u $k8s_user >/dev/null 2>&1) == 0 ]]; then
         log ERROR "The user specified by -u should be a non-root user"
         exit 1
     fi
@@ -288,8 +289,6 @@ function setup_env {
         exit 1
     fi
 
-    log INFO "k8s user is $k8s_user"
-    
     check_arch_ok
     verify_user
 
