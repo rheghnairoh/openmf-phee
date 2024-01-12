@@ -30,7 +30,7 @@ function check_resources_ok {
 
 function set_user {
     # set the k8s_user
-    #   k8s_user=`whoami | cut -d " " -f1`
+    k8s_user=$(whoami | cut -d " " -f1)
     log INFO "k8s user is $k8s_user"
 }
 
@@ -206,7 +206,7 @@ function add_helm_repos {
 function verify_user {
     # ensure that the user for k8s exists
     if [ -z ${k8s_user+x} ]; then
-        log ERROR "The operating system user has not been specified with the -u flag \nThe user must not be the root user."
+        log ERROR "Installation user not set \nNote: user must cannot be root."
         exit 1
     fi
 

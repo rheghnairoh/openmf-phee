@@ -91,11 +91,11 @@ function main {
   welcome
   getoptions "$@"
   if [ $mode == "install" ]; then
-    log "${YELLOW}"
-    log "===================================================================="
-    log "This deployment is meant for demo purposes and not for production"
-    log "===================================================================="
-    log "${RESET}"
+    echo -e "${YELLOW}"
+    echo -e "===================================================================="
+    echo -e "This deployment is meant for demo purposes and not for production"
+    echo -e "===================================================================="
+    echo -e "${RESET}"
     setup_env "$k8s_distro"
     deploy_infrastructure
     deploy_apps
