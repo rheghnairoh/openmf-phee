@@ -120,8 +120,8 @@ function deploy_helm_chart_from_dir() {
         log OK "Helm chart deployed successfully."
     else
         log ERROR "Helm chart deployment failed.\n" \
-            "Consider uninstalling: sudo ./installer.sh -m uninstall \n" \
-            "And install again: sudo ./installer.sh -m install"
+            "Consider uninstalling: sudo ./installer.sh -m uninstall -u $USER \n" \
+            "And install again: sudo ./installer.sh -m install -u $USER"
     fi
     # Exit the chart directory
     cd - || exit 1

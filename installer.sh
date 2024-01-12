@@ -18,11 +18,12 @@ function showUsage {
     exit 1
   else
     echo "USAGE: $0 -m [mode]
-Example 1 : sudo $0  -m install # Install
-Example 2 : sudo $0  -m uninstall # Uninstall everything
+Example 1 : sudo $0  -m install -u $USER # Install
+Example 2 : sudo $0  -m uninstall -u $USER # Uninstall everything
 
 Options:
   -m mode ............... install|uninstall (-m is required)
+  -u user................ user attached to the installation
   -h|H .................. display this message
 "
   fi
@@ -32,10 +33,13 @@ Options:
 function getoptions {
   local mode_opt
 
-  while getopts "m:hH" OPTION; do
+  while getopts "m:u:hH" OPTION; do
     case "${OPTION}" in
     m)
       mode_opt="${OPTARG}"
+      ;;
+    u)
+      k8s_user="${OPTARG}"
       ;;
     h | H)
       showUsage

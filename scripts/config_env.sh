@@ -28,13 +28,6 @@ function check_resources_ok {
     fi
 }
 
-function set_user {
-    # set the k8s_user
-    #   k8s_user=`whoami | cut -d " " -f1`
-    k8s_user=$USER
-    log INFO "k8s user is $k8s_user"
-}
-
 function set_linux_os_distro {
     LINUX_VERSION="Unknown"
     if [ -x "/usr/bin/lsb_release" ]; then
@@ -295,8 +288,9 @@ function setup_env {
         exit 1
     fi
 
+    log INFO "k8s user is $k8s_user"
+    
     check_arch_ok
-    set_user
     verify_user
 
     check_resources_ok

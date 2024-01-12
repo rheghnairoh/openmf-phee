@@ -48,7 +48,7 @@ chmod +x installer.sh
 ```
 
 ```bash
-sudo ./installer.sh -m install
+sudo ./installer.sh -m install -u $USER
 ```
 
 > NOTE: This deployment is for demo purposes and not for production
@@ -65,7 +65,7 @@ kubectl get pods -n paymenthub #For testing paymenthub
 Uninstall the deployment by running the command below
 
 ```bash
-sudo ./installer.sh -m install
+sudo ./installer.sh -m install -u $USER
 ```
 
 ## References
