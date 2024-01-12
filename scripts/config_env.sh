@@ -30,7 +30,8 @@ function check_resources_ok {
 
 function set_user {
     # set the k8s_user
-    k8s_user=$(whoami | cut -d " " -f1)
+    #   k8s_user=`whoami | cut -d " " -f1`
+    k8s_user=$USER
     log INFO "k8s user is $k8s_user"
 }
 
@@ -116,7 +117,7 @@ function install_prerequisites {
             log DEBUG " sudo apt-get install -y netcat"
             exit 1
         else
-            log INFO "nc (netcat) is installed.\n"
+            log INFO "nc (netcat) is installed."
         fi
 
         # Check if jq is installed
@@ -133,7 +134,7 @@ function install_prerequisites {
             log ERROR "make is not installed. Install and try again...(https://stedolan.github.io/jq/)"
             log DEBUG " sudo apt install -y make"
         else
-            log INFO "jq is installed"
+            log INFO "make is installed."
         fi
 
         # Check if sed is installed
@@ -206,11 +207,11 @@ function add_helm_repos {
 function verify_user {
     # ensure that the user for k8s exists
     if [ -z ${k8s_user+x} ]; then
-        log ERROR "Installation user not set \nNote: user must cannot be root."
+        log ERROR "Installation user not set with the -u flag \nNote: The user must not be root."
         exit 1
     fi
 
-    if [[ $(id -u $k8s_user >/dev/null 2>&1) == 0 ]]; then
+    if [[ "$EUID" = 0 ]]; then
         log ERROR "The user specified by -u should be a non-root user"
         exit 1
     fi
