@@ -42,7 +42,6 @@ function set_linux_os_distro {
 function check_os_ok {
     log INFO "Checking OS distro"
     set_linux_os_distro
-    n
     if [[ ! $LINUX_OS == "Ubuntu" ]]; then
         log WARNING "Untested OS distro detected. Installation requires Ubuntu OS"
         log ERROR "Proceeding... Unexpected behaviour might occur !!!"
@@ -83,10 +82,10 @@ function configure_microk8s {
     log INFO "Cleaning .kube/config files"
     mv $k8s_user_home/.kube $k8s_user_home/.kube.bak >>/dev/null 2>&1
     # setup .kube/config
-    chown -f -R $k8s_user $k8s_user_home/.kube
+    chown -f -R $k8s_user $k8s_user_home/.kube >>/dev/null 2>&1
     microk8s config >$k8s_user_home/.kube/config
 
-    log OK "Microk8s configured"
+    log OK "Microk8s configuration complete"
 }
 
 function install_prerequisites {
@@ -101,7 +100,7 @@ function install_prerequisites {
             log INFO "Docker installed..."
             # Add your user to the docker group (optional)
             log INFO "Adding current user ($USER) to the docker group"
-            sudo usermod -aG docker $USER
+            sudo usermod -aG docker $k8s_user
         fi
 
         # Check if nc (netcat) is installed
@@ -177,7 +176,7 @@ function add_hosts {
 }
 
 function install_k8s_tools {
-    log INFO "Recommendation - install kubernetes tools: kubens, kubectx and kustomize"
+    log DEBUG "Recommendation - install kubernetes tools: kubens, kubectx and kustomize"
 }
 
 function add_helm_repos {
@@ -244,10 +243,10 @@ function uninstall_setup {
         " - sed : sudo apt-get remove sed \n" \
         " - jq : sudo apt-get remove jq \n"
 
-    log INFO "Removing $k8s_user from microk8s group"
-    sudo gpasswd -d $USER microk8s
-    log INFO "Removing $k8s_user from docker group"
-    sudo gpasswd -d $USER docker
+    log WARNING "Manually remove $k8s_user from microk8s group if needed\n" \
+        " sudo gpasswd -d $k8s_user microk8s"
+    log WARNING "Manually remove $k8s_user from docker group if needed\n" \
+        " sudo gpasswd -d $k8s_user docker"
 
     log INFO "Restoring kube config"
     mv $k8s_user_home/.kube.bak $k8s_user_home/.kube >>/dev/null 2>&1
