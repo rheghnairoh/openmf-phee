@@ -99,7 +99,7 @@ function install_prerequisites {
         else
             log INFO "Docker installed..."
             # Add your user to the docker group (optional)
-            log INFO "Adding current user ($USER) to the docker group"
+            log INFO "Adding current user ($k8s_user) to the docker group"
             sudo usermod -aG docker $k8s_user
         fi
 
