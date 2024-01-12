@@ -1,0 +1,12 @@
+dependencies:
+- name: console
+  repository: https://charts.redpanda.com
+  version: 0.6.6
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.3.1
+- name: mongo-express
+  repository: https://cowboysysop.github.io/charts/
+  version: 3.1.1
+digest: sha256:23286308cf1373f8bc80df37adfede7d74973ed260f965590d351af915193600
+generated: "2024-01-11T22:08:57.95772+02:00"

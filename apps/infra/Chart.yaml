@@ -1,0 +1,31 @@
+apiVersion: v2
+description: Helm chart for infrastructure services
+name: infra
+version: 15.0.0
+appVersion: "console: 0.6.6; mongodb: 13.3.1; mongo-express: 3.1.1; elasticsearch:19.9.2; redis: 17.11.6"
+home: https://summerofcode.withgoogle.com/programs/2023/projects/oQk6Gmup
+icon: https://summerofcode.withgoogle.com/assets/media/logo.svg
+sources:
+- https://github.com/rheghnairoh/openmf-phee
+maintainers:
+- name: Honest Chirozva Okello
+  email: hchirozvah@outlook.com
+dependencies:
+## redpanda kafka console 
+- name: console
+  alias: redpanda-console
+  condition: console.enabled
+  repository: https://charts.redpanda.com
+  version: 0.6.6
+## MongoDB
+- name: mongodb
+  alias: mongodb
+  condition: mongodb.enabled
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.3.1
+## Mongo-express
+- name: mongo-express
+  alias: mongo-express
+  condition: mongo-express.enabled
+  repository: https://cowboysysop.github.io/charts/
+  version: 3.1.1
