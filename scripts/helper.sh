@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ./apps/env.sh
 source ./scripts/logger.sh
 
 ########################################################################
@@ -93,7 +94,7 @@ function deploy_helm_chart_from_dir() {
     cd "$chart_dir" || exit 1
 
     log DEBUG "Deploying helm chart $release_name from directory $chart_dir..."
-    
+
     # Run helm dependency update to fetch dependencies
     log INFO "Updating Helm chart dependencies..."
     helm dependency update >>/dev/null 2>&1
@@ -119,9 +120,14 @@ function deploy_helm_chart_from_dir() {
     if [ $resource_count -gt 0 ]; then
         log OK "Helm chart deployed successfully."
     else
-        log ERROR "Helm chart deployment failed.\n" \
-            "Consider uninstalling: sudo ./installer.sh -m uninstall -u $USER \n" \
-            "And install again: sudo ./installer.sh -m install -u $USER"
+        log ERROR "Helm chart $release_name deployment failed."
+        if [[ "$release_name" == "$PH_RELEASE_NAME" ]]; then
+            log ERROR "Payment hub EE installation failed, cannot resume deploying other applications. \n" \
+                "Consider uninstalling: sudo ./installer.sh -m uninstall -u $k8s_user \n" \
+                "And install again: sudo ./installer.sh -m install -u $k8s_user"
+            exit 1
+        fi
+
     fi
     # Exit the chart directory
     cd - || exit 1

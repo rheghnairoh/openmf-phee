@@ -182,12 +182,14 @@ function configure_paymenthub() {
 
     # create secrets for paymenthub namespace and infra namespace
     cd es-secret || exit 1
+    log DEBUG "Creating elasticsearch secrets..."
     create_secret "$PH_NAMESPACE"
-    create_secret "$INFRA_NAMESPACE"
+    # create_secret "$INFRA_NAMESPACE"
     cd ..
     cd kibana-secret || exit 1
+    log DEBUG "Creating kibana secrets..."
     create_secret "$PH_NAMESPACE"
-    create_secret "$INFRA_NAMESPACE"
+    # create_secret "$INFRA_NAMESPACE"
     cd ..
     kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
@@ -225,15 +227,15 @@ function update_phee (){
 function uninstall_deployments {
     log WARNING "Uninstalling deployments..."
 
-    log INFO "Uninstalling infrastructure - $INFRA_RELEASE_NAME in $INFRA_NAMESPACE namespace."
-    su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME"
+    log INFO "Uninstalling infrastructure..."
+    su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME -n $INFRA_NAMESPACE "
     su - $k8s_user -c "kubectl delete namespace $INFRA_NAMESPACE"
 
-    log INFO "Uninstalling paymenthub - $PH_RELEASE_NAME in $PH_NAMESPACE namespace."
-    su - $k8s_user -c "helm uninstall $PH_RELEASE_NAME"
+    log INFO "Uninstalling paymenthub ..."
+    su - $k8s_user -c "helm uninstall $PH_RELEASE_NAME -n $PH_NAMESPACE"
     su - $k8s_user -c "kubectl delete namespace $PH_NAMESPACE"
 
-    log INFO "Uninstalling mojaloop."
+    log INFO "Uninstalling mojaloop..."
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 
     log WARNING "Deployments uninstalled."
