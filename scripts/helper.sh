@@ -29,7 +29,7 @@ function replace_values_in_file() {
         return 0
     else
         log ERROR "Error updating the value."
-        return 1
+        exit 1
     fi
 }
 

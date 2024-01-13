@@ -168,35 +168,35 @@ function deploy_mojaloop() {
 }
 
 function configure_paymenthub_env_vars {
-    log DEBUG "Updating tenant datasource connections in config"
+    log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     # application-tenantsConnection.properties
-    local file_name = "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT/config/application-tenantsConnection.properties"
-    local old_value = "operationsmysql"
-    local new_value = "$MYSQL_HOST"
+    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT/config/application-tenantsConnection.properties"
+    local old_value="operationsmysql"
+    local new_value="$MYSQL_HOST"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
     # db port
-    $old_value = "3306"
-    $new_value = "$MYSQL_PORT"
+    old_value="3306"
+    new_value="$MYSQL_PORT"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
     # db user
-    $old_value = "mifos"
-    $new_value = "$MYSQL_USER"
+    old_value="mifos"
+    new_value="$MYSQL_USER"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
-    # db port
-    $old_value = "password"
-    $new_value = "$MYSQL_PASSWORD"
+    # db password
+    old_value="password"
+    new_value="$MYSQL_PASSWORD"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
 
-    log DEBUG "Updating tenant datasource connections in ph_values.yaml"
-    $file_name = "$APPS_DIR/ph_values.yaml"
-    $old_value = "operationsmysql.sandbox.fynarfin.io"
-    $new_value = "$MYSQL_HOST"
+    log DEBUG "Updating tenant datasource url in ph_values.yaml"
+    file_name="apps/ph_values.yaml"
+    old_value="operationsmysql.sandbox.fynarfin.io"
+    new_value="$MYSQL_HOST"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
 
     log DEBUG "Updating hostname (DNS) in ph_values.yaml"
-    $file_name = "$APPS_DIR/ph_values.yaml"
-    $old_value = "sandbox.fynarfin.io"
-    $new_value = "$PH_HOSTNAME"
+    file_name="apps/ph_values.yaml"
+    old_value="sandbox.fynarfin.io"
+    new_value="$PH_HOSTNAME"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
 }
 
