@@ -32,7 +32,7 @@ ph-ee-g2psandbox:
       enabled: true
       volumeClaimTemplate:
         # accessModes: [ "ReadWriteOnce" ]
-        storageClassName: ""
+        storageClassName: standard
         resources:
           requests:
             storage: 10Gi
