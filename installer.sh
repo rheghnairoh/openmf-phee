@@ -24,6 +24,7 @@ Options:
 
 Example 1 : sudo $0  -m install -u $USER # Install
 Example 2 : sudo $0  -m uninstall -u $USER # Uninstall everything
+Example 2 : sudo $0  -m update -u $USER # Update current installation
     **** Argument -m [mode] is required****
 "
     fi
@@ -100,6 +101,8 @@ function main {
         deploy_apps
     elif [ $mode == "uninstall" ]; then
         uninstall
+    elif [ $mode == "update" ]; then
+        update_phee
     else
         showUsage
     fi
