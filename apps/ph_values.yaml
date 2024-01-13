@@ -6,90 +6,42 @@ ph-ee-g2psandbox:
       tenants: "rhino,gorilla,lion"
       DFSPIDS: "gorilla,lion"
 
-    zeebe-operate-helm:
+    camunda-platform:
+      prometheusServiceMonitor:
+        enabled: false
+
+    zeebe-cluster-helm:
       enabled: true
-      image:
-        repository: camunda/operate
-        tag: 1.1.0
-      global:
-        elasticsearch:
-          host: "ph-ee-elasticsearch"
-          clusterName: "ph-ee-elasticsearch"
+
+      elasticsearch:
+        enabled: false
+      kibana:
+        enabled: true
+
+    zeebe-operate-helm:
       ingress:
         enabled: false
-        annotations:
-          kubernetes.io/ingress.class: public
+        className: "public"
         path: /
         host: operate.sandbox.mifos.io
         tls:
           enabled: true
 
-    camunda-platform:
-      prometheusServiceMonitor:
-        enabled: false
-
     elasticsearch:
       enabled: true
-      #Single Node Solution
-      clusterHealthCheckParams: "wait_for_status=yellow&timeout=100s"
-      protocol: http
-      master:
-        readinessProbe:
-          httpGet:
-            allow-insecure: true
-            username: elastic
-            password: "{{ .Env.ELASTIC_PASSWORD }}"
-            path: /_cluster/health?wait_for_status=yellow&timeout=5s
-            port: 9200
-          initialDelaySeconds: 30
-      data:
-        readinessProbe:
-          httpGet:
-            allow-insecure: true
-            username: elastic
-            password: "{{ .Env.ELASTIC_PASSWORD }}"
-            path: /_cluster/health?wait_for_status=yellow&timeout=5s
-            port: 9200
-          initialDelaySeconds: 30
-      # Shrink default JVM heap.
-      esJavaOpts: "-Xmx512m -Xms512m"
-      # Allocate smaller chunks of memory per pod.
-      resources:
-        requests:
-          cpu: "500m"
-          memory: "1024M"
-        limits:
-          cpu: "1000m"
-          memory: "1024M"
-      volumeClaimTemplate:
-        # accessModes: [ "ReadWriteOnce" ]
-        # storageClassName: "gp2"
-        resources:
-          requests:
-            storage: 10Gi
 
     kibana:
-      enabled: true
-      readinessProbe:
-        initialDelaySeconds: 45
-        timeoutSeconds: 15
-        successThreshold: 1
-      protocol: http
       ingress:
-        enabled: false
+        enabled: true
         className: "public"
         pathtype: "Prefix"
-        annotations: { }
-        # kubernetes.io/ingress.class: public
+        annotations: {}
+        # kubernetes.io/ingress.class: nginx
         # kubernetes.io/tls-acme: "true"
         hosts:
-          - host: analytics.sandbox.mifos.io
+          - host: analytics.sandbox.fynarfin.io
             paths:
               - path: /
-        #tls: []
-        #  - secretName: chart-example-tls
-        #    hosts:
-        #      - chart-example.local
 
     operations:
       enabled: true
@@ -98,94 +50,85 @@ ph-ee-g2psandbox:
 
     operationsmysql:
       enabled: false
-      auth:
-        database: "tenants"
-        username: "mifos"
-        password: "password"
-        rootPassword: "mysql"
-      initdbScripts:
-        setup.sql: |-
-          CREATE DATABASE messagegateway;
-          CREATE DATABASE `rhino`;
-          CREATE DATABASE `gorilla`;
-          GRANT ALL PRIVILEGES ON `rhino`.* TO 'mifos';
-          GRANT ALL PRIVILEGES ON `gorilla`.* TO 'mifos';
-          GRANT ALL PRIVILEGES ON `lion`.* TO 'mifos';
-          GRANT ALL ON *.* TO 'root'@'%';
-          GRANT ALL PRIVILEGES ON messagegateway.* TO 'mifos';
-          GRANT ALL PRIVILEGES ON `identity_account_mapper`.* TO 'mifos';
-          GRANT ALL PRIVILEGES ON `voucher_management`.* TO 'mifos';
 
     ph_ee_connector_ams_mifos:
       enabled: true
-      SPRING_PROFILES_ACTIVE: "fin12,bb"
+
       operations_app:
         datasource:
           host: "counselorservice.sytes.net"
-      ams_local_enabled: true
-      ams_local_interop_host: "https://fynams.sandbox.mifos.io/"
-      ams_local_account_host: "https://fynams.sandbox.mifos.io/"
-      ams_local_customer_host: "https://fynams.sandbox.mifos.io/"
-      ams_local_auth_host: "https://fynams.sandbox.mifos.io/"
-      ingress:
-        enabled: false
+      deployment:
         annotations:
-          kubernetes.io/ingress.class: public
-        tls:
-          - secretName: sandbox-secret
+          rollme: '{{ randAlphaNum 5 | quote }}'
+      ams_local_interop_host: "https://fynams.sandbox.fynarfin.io/"
+      ams_local_account_host: "https://fynams.sandbox.fynarfin.io/"
+      ams_local_customer_host: "https://fynams.sandbox.fynarfin.io/"
+      ams_local_auth_host: "https://fynams.sandbox.fynarfin.io/"
+      ams_local_loan_host: "https://fynams.sandbox.fynarfin.io/"
+      ingress:
+        enabled: true 
         hosts:
-          - host: ams-mifos.sandbox.mifos.io
+          - host: ams-mifos.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: ph-ee-connector-ams-mifos
+                  port:
+                    number: 80
+          - host: ams-mifos-mock.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
                   service:
                     name: ph-ee-connector-ams-mifos
                     port:
-                      number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+                      number: 7070
 
     ph_ee_connector_mojaloop:
       enabled: true
-      SPRING_PROFILES_ACTIVE: "bb"
-      hostname: "mojaloop.sandbox.mifos.io"
-      DFSPIDS: "gorilla,lion"
-      ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: nginx
-        tls:
-          - secretName: sandbox-secret
-        hosts:
-          - host: mojaloop.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: ph-ee-connector-mojaloop-java
-                    port:
-                      number: 80
+      image: docker.io/openmf/ph-ee-connector-mojaloop:latest
+      switch:
+        quotes:
+          host: "http://quoting-service.sandbox.fynarfin.io"
+          service: "quoting-service.sandbox.fynarfin.io"
+        als:
+          host: "http://account-lookup-service.sandbox.fynarfin.io"
+          service: "account-lookup-service.sandbox.fynarfin.io"
+        transfers:
+          host: "http://ml-api-adapter.sandbox.fynarfin.io"
+          service: "api-adapter.sandbox.fynarfin.io"
+        transactions:
+          host: "http://ml-api-adapter.sandbox.fynarfin.io"
+          service: "ml-api-adapter.sandbox.fynarfin.io"
+        oracle:
+          host: "http://moja-simulator.sandbox.fynarfin.io"
       deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+        extraEnvs:
+          - name: parties_0_domain
+            value: "https://fynams.sandbox.fynarfin.io/"
+          - name: parties_1_domain
+            value: "mojaloop.sandbox.fynarfin.io"
+          - name: parties_0_tenantId
+            value: "gorilla"
+          - name: parties_1_tenantId
+            value: "lion"
+          - name: parties_0_fspId
+            value: "payerfsp"
+          - name: parties_1_fspId
+            value: "payeefsp"
 
-    mockpayment:
-      enabled: true
-      hostname: " http://ph-ee-connector-mock-payment-schema:8080"
       ingress:
         enabled: true
-        className: "public"
-        annotations:
-          nginx.ingress.kubernetes.io/use-regex: "true"
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
+        tls:
+          - secretName: fyn-cert
         hosts:
-          - host: ""
-            paths:
-            - path: /mock(/|$)(.*)
+          - host: mojaloop.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
               backend:
                 service:
-                  name: ph-ee-connector-mock-payment-schema
+                  name: ph-ee-connector-mojaloop-java
                   port:
                     number: 80
 
@@ -253,35 +196,34 @@ ph-ee-g2psandbox:
       server:
         ssl:
           keyPassword: "password"
-          keyStorePassword: "password"
-      ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: nginx
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-        tls:
-          - secretName: sandbox-secret
-        hosts:
-          - host: channel.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-channel"
-                    port:
-                      number: 8443
-          - host: channel-gsma.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-channel-gsma"
-                    port:
-                      number: 82
+          keyStorePassword: "password"   
       deployment:
         annotations:
-          deployTime: "{{ .Values.deployTime }}"
-
+          rollme: "{{ randAlphaNum 5 | quote }}"
+      service:
+        annotations:
+          konghq.com/protocol: "https"
+      ingress:
+        enabled: true 
+        className: "kong"
+        hosts:
+          - host: channel.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-channel"
+                  port:
+                    number: 8443
+          - host: channel-gsma.sandbox.fynarfin.io          
+            paths:          
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-channel-gsma"
+                  port:
+                    number: 82  
+             
 
     operations_app:
       enabled: true
@@ -294,23 +236,20 @@ ph-ee-g2psandbox:
         port: 3306
         schema: "tenants"
       limits:
-        memory: "2Gi"
+        memory: "1Gi"
         cpu: "1000m"
       requests:
         memory: "516M"
         cpu: "500m"  
+      deployment:
+        annotations:
+          rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
         className: "public"
         annotations:
-          nginx.ingress.kubernetes.io/cors-allow-headers: 'platform-tenantid'
-          nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS, DELETE
-          nginx.ingress.kubernetes.io/cors-allow-origin: '*'
-          nginx.ingress.kubernetes.io/enable-cors: "true"
           nginx.ingress.kubernetes.io/use-regex: "true"
           nginx.ingress.kubernetes.io/rewrite-target: /$2
-        # tls:
-        #   - secretName: sandbox-secret
         hosts:
           - host: ""        
             paths: 
@@ -319,189 +258,139 @@ ph-ee-g2psandbox:
                 service:
                   name: "ph-ee-operations-app"
                   port:
-                    number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+                    number: 80 
 
     operations_web:
       enabled: true
+      image: docker.io/openmf/ph-ee-operations-web:latest
       hostname: "ops.sandbox.mifos.io"
-      SPRING_PROFILES_ACTIVE: "bb"
       ingress:
-        enabled: false
-        tls:
-          - secretName: sandbox-secret
+        enabled: true
+        className: "public"
         hosts:
-          - host: ops.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-operations-web"
-                    port:
-                      number: 4200
+          - host: ops.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-operations-web"
+                  port:
+                    number: 4200            
+
     identity:
       hostname: "ops-bk.sandbox.mifos.io"
 
     ph_ee_connector_gsma:
       enabled: true
-      SPRING_PROFILES_ACTIVE: "bb"
-      limits:
-        cpu: "500m"
-        memory: "512M"
-      requests:
-        cpu: "100m"
-        memory: "256M"
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+      image: docker.io/openmf/ph-ee-connector-gsma:latest
+      ingress:
+        enabled: true  
 
     ph_ee_connector_slcb:
       enabled: false
-
+    
     mpesa:
       enabled: false
-
+      
     roster_connector:
       enabled: false
-
+      
     paygops_connector:
       enabled: false
-
+      
     notifications:
       enabled: true
-      imagePullPolicy: "Always"
-      SPRING_PROFILES_ACTIVE: "bb"
-      LOGGING_LEVEL_ROOT: "INFO"
-      MESSAGEGATEWAYCONFIG_HOST: "message-gateway"
-      NOTIFICATION_LOCAL_HOST: "ph-ee-connector-notifications"
-      NOTIFICATION_SUCCESS_ENABLED: "false"
-      NOTIFICATION_FAILURE_ENABLED: "true"
-      hostname: "notifications.sandbox.mifos.io"
-      limits:
-        cpu: "1000m"
-        memory: "1Gi"
+      image: docker.io/openmf/ph-ee-notifications:latest
+      NOTIFICATION_FAILURE_ENABLED: "false"
       ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: nginx
-        tls:
-          - secretName: sandbox-secret
+        enabled: true
+        className: "public"
         hosts:
-          - host: notifications.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-notifications"
-                    port:
-                      number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+          - host: notifications.sandbox.fynarfin.io         
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-notifications"
+                  port:
+                    number: 80 
 
     connector_bulk:
       enabled: true
-      tenant: "rhino,gorilla"
-      hostname: bulk-connector.sandbox.mifos.io
-      aws:
-        region: "ap-south-1"
-        access_key: "<access_key>"
-        secret_key: "<secret_key>"
+      image: docker.io/openmf/ph-ee-bulk-processor:latest
+      tenants: "rhino,gorilla"
+      deployment:
+        annotations:
+          rollme: "{{ randAlphaNum 5 | quote }}"
       operations_app:
-        contactpoint: "https://ops-bk.sandbox.mifos.io/"
+        contactpoint: "https://ops-bk.sandbox.fynarfin.io/"
         endpoints:
           batch_transaction: "/api/v1/batch/transactions"
       identity_account_mapper:
-        hostname: "https://identity-mapper.sandbox.mifos.io:80"
-      service:
-        annotations:
-          konghq.com/protocol: "https"
+        hostname: "https://identity-mapper.sandbox.fynarfin.io"
       ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: public
+        enabled: true
+        className: "kong"
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: bulk-connector.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-bulk"
-                    port:
-                      number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+          - host: bulk-connector.sandbox.fynarfin.io     
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-bulk"
+                  port:
+                    number: 8443   
           
     zeebe_ops:
       enabled: true
+      image: docker.io/openmf/ph-ee-zeebe-ops:latest
       hostname: "zeebeops.sandbox.mifos.io"
       tenants: "rhino,gorilla"
       ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: nginx
-        tls:
-          - secretName: sandbox-secret
+        enabled: true
+        className: "public"
         hosts:
-          - host: zeebeops.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-zeebe-ops"
-                    port:
-                      number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+          - host: zeebeops.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-zeebe-ops"
+                  port:
+                    number: 80
 
     messagegateway:
       enabled: true
+      image: docker.io/openmf/message-gateway:latest
+      MYSQL_USERNAME: "mifos"
+      MYSQL_PASSWORD: "password"
       DATASOURCE_URL: jdbc:mysql:thin://counselorservice.sytes.net:3306/messagegateway
-      operations_app:
-        datasource:
-          host: "counselorservice.sytes.net"
       secret:
         value:
-          # api_key: "<api_key>"
-          # project_id: "<project_id>"
           api_key: "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
           project_id: "PJ5ff552ce01d2978c"
-      hostname: "messagegateway.sandbox.mifos.io"
       ingress:
-        enabled: false
-        annotations:
-          kubernetes.io/ingress.class: nginx
-        tls:
-          - secretName: sandbox-secret
+        enabled: true   
+        className: "public"
         hosts:
-          - host: messagegateway.sandbox.mifos.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "message-gateway"
-                    port:
-                      number: 80
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
-
+          - host: messagegateway.sandbox.fynarfin.io       
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "message-gateway"
+                  port:
+                    number: 80
+                            
     importer_es:
       enabled: true
-      elasticsearch_sslverification: false
-      elasticsearch_security_enabled: false
-      reporting:
-        enabled: false
+      image: docker.io/openmf/ph-ee-importer-es:latest
 
     importer_rdbms:
       enabled: true
-      LOGGING_LEVEL_ROOT: "DEBUG"
+      image: docker.io/openmf/ph-ee-importer-rdbms:latest
       aws:
         region: "us-east-1"
       datasource:
@@ -510,57 +399,181 @@ ph-ee-g2psandbox:
         host: "counselorservice.sytes.net"
         port: 3306
         schema: "tenants"
+    
+    mockpayment:
+      enabled: true
+      image: docker.io/openmf/ph-ee-connector-mock-payment-schema:latest
+      ingress:
+        enabled: true
+        className: "public"
+        hosts:
+          - host: mockpaymentschema.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-mock-payment-schema"
+                    port:
+                      number: 8080
+
+    billPay:
+      enabled: true
+      image: docker.io/openmf/ph-ee-bill-pay:latest
+      billpay:
+        contactpoint: "https://bill-pay.sandbox.fynarfin.io"
+      connector:
+        contactpoint: "https://connector.sandbox.fynarfin.io"
+      ingress:
+        enabled: true
+        className: "public"
+        hosts:
+          - host: bill-pay.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-bill-pay"
+                    port:
+                      number: 8080
+    crm:
+      enabled: true
+      image: docker.io/openmf/ph-ee-connector-crm:latest
+      ingress:
+        enabled: true
+        className: "public"
+        hosts:
+          - host: connector-crm.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-crm"
+                    port:
+                      number: 8080
+
+    wildcardhostname: "*.sandbox.fynarfin.io"
+    tls: ""
+
+    post_installation_job: 
+      enabled: true
 
     keycloak:
       enabled: true
       ingress:
-        enabled: false
+        enabled: true
         ingressClassName: "kong"
         rules:
-          - host: 'keycloak.sandbox.mifos.io'
+          - host: 'keycloak.sandbox.fynarfin.io'
             paths:
-              - path: /
-                pathType: Prefix
-        tls: [ ]
+            - path: /
+              pathType: Prefix
 
+    
     kong:
       enabled: true
-      image:
-        repository: revomatico/docker-kong-oidc
-        tag: "latest"
-      env:
-        database: "postgres"
-        pg_host: "g2p-sandbox-postgresql"
-        pg_user: "keycloak"
-        pg_password: "keycloak"
-        pg_database: "kong"
-        plugins: "bundled,oidc"
-      admin:
+      ingress:
         enabled: true
-        http:
-          enabled: true
-        tls:
-          enabled: false
-        ingress:
-          enabled: false
-          hostname: admin-kong.sandbox.mifos.io
+        ingressClassName: "kong"
+        hostname: admin-kong.sandbox.fynarfin.io 
+
+    redis:
+      enabled: true
+      replica:
+        replicaCount: 0
 
     vouchers:
       enabled: true
-      spring:
-        datasource:
-          url: "jdbc:mysql://counselorservice.sytes.net:3306/voucher_management"
-          username: "mifos"
-          password: "password"
-          
+      image: docker.io/openmf/ph-ee-vouchers:latest
+
+      voucher:
+        hostname: "https://vouchers.sandbox.fynarfin.io"
+
+      salting:
+        enabled: true
+
+      identity-account-mapper:
+        hostname: "https://identity-mapper.sandbox.fynarfin.io"
+      operations:
+        hostname: "https://ops-bk.sandbox.fynarfin.io"
+        endpoints:
+          transfers: "/api/v1/transfers?size=1&page=0"
+
+      deployment:
+        annotations:
+          rollme: "{{ randAlphaNum 5 | quote }}"
+      ingress:
+        enabled: true
+        className: "public"
+        tls:
+          - secretName: sandbox-secret
+        hosts:
+          - host: vouchers.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-vouchers"
+                    port:
+                      number: 80
+    connector:
+      enabled: true
+      image: docker.io/openmf/ph-ee-connector-bulk:latest
+      deployment:
+        annotations:
+          rollme: "{{ randAlphaNum 5 | quote }}"
+      ingress:
+        enabled: true
+        className: "public"
+        tls:
+          - secretName: sandbox-secret
+        hosts:
+          - host: connector.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector"
+                    port:
+                      number: 80
+    minio:
+      enabled: true
+      consoleIngress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: "public"
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        hosts:
+          - minio-console.sandbox.fynarfin.io
+
   account_mapper:
+    enabled: true
+    image: docker.io/openmf/ph-ee-identity-account-mapper:latest
     spring:
       datasource:
         url: jdbc:mysql:thin://counselorservice.sytes.net:3306/identity_account_mapper
         username: mifos
         password: password
     requests:
-      cpu: "100m"
-      memory: "256M"
+      cpu: "500m"
+      memory: "512M"
+    deployment:
+      annotations:
+        rollme: "{{ randAlphaNum 5 | quote }}"
+    ingress:
+      enabled: true
+      className: "public"
+      tls:
+        - secretName: sandbox-secret
+      hosts:
+        - host: identity-mapper.sandbox.fynarfin.io
+          paths:
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-identity-account-mapper"
+                  port:
+                    number: 80
+
+                  
 
 
