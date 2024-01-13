@@ -10,11 +10,11 @@ redpanda-console:
     config:
       kafka:
         brokers:
-          - kafka.g2p-sandbox.svc.cluster.local:9092
+          - kafka.paymenthub.svc.cluster.local:9092
 
   ingress:
     enabled: true
-    className: nginx
+    className: public
     hosts:
       - host: redpanda-console.local
         paths:
@@ -54,7 +54,7 @@ mongo-express:
 
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: public
 
   mongodbEnableAdmin: true
   mongodbAdminPassword: mongoDbPas42

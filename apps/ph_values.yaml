@@ -23,12 +23,18 @@ ph-ee-g2psandbox:
         enabled: false
         className: "public"
         path: /
-        host: operate.sandbox.mifos.io
+        host: operate.sandbox.fynarfin.io
         tls:
           enabled: true
 
     elasticsearch:
       enabled: true
+      volumeClaimTemplate:
+        # accessModes: [ "ReadWriteOnce" ]
+        # storageClassName: "gp2"
+        resources:
+          requests:
+            storage: 10Gi
 
     kibana:
       ingress:
@@ -56,7 +62,7 @@ ph-ee-g2psandbox:
 
       operations_app:
         datasource:
-          host: "counselorservice.sytes.net"
+          host: "operationsmysql.sandbox.fynarfin.io"
       deployment:
         annotations:
           rollme: '{{ randAlphaNum 5 | quote }}'
@@ -178,8 +184,8 @@ ph-ee-g2psandbox:
 
     channel:
       enabled: true
-      hostname: "channel.sandbox.mifos.io"
-      stub_hostname: "channel-gsma.sandbox.mifos.io"
+      hostname: "channel.sandbox.fynarfin.io"
+      stub_hostname: "channel-gsma.sandbox.fynarfin.io"
       SPRING_PROFILES_ACTIVE: "bb,tenants"
       DFSPIDS: "rhino,gorilla,lion"
       operations:
@@ -228,15 +234,15 @@ ph-ee-g2psandbox:
     operations_app:
       enabled: true
       tenants: "rhino,gorilla"
-      hostname: "ops-bk.sandbox.mifos.io"
+      hostname: "ops-bk.sandbox.fynarfin.io"
       datasource:
         username: "mifos"
         password: "password"
-        host: "counselorservice.sytes.net"
+        host: "operationsmysql.sandbox.fynarfin.io"
         port: 3306
         schema: "tenants"
       limits:
-        memory: "1Gi"
+        memory: "2Gi"
         cpu: "1000m"
       requests:
         memory: "516M"
@@ -263,7 +269,7 @@ ph-ee-g2psandbox:
     operations_web:
       enabled: true
       image: docker.io/openmf/ph-ee-operations-web:latest
-      hostname: "ops.sandbox.mifos.io"
+      hostname: "ops.sandbox.fynarfin.io"
       ingress:
         enabled: true
         annotations:
@@ -279,7 +285,7 @@ ph-ee-g2psandbox:
                     number: 4200            
 
     identity:
-      hostname: "ops-bk.sandbox.mifos.io"
+      hostname: "ops-bk.sandbox.fynarfin.io"
 
     ph_ee_connector_gsma:
       enabled: true
@@ -303,6 +309,12 @@ ph-ee-g2psandbox:
       enabled: true
       image: docker.io/openmf/ph-ee-notifications:latest
       NOTIFICATION_FAILURE_ENABLED: "false"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+      requests:
+        memory: "512M"
+        cpu: "100m"
       ingress:
         enabled: true
         className: "public"
@@ -347,7 +359,7 @@ ph-ee-g2psandbox:
     zeebe_ops:
       enabled: true
       image: docker.io/openmf/ph-ee-zeebe-ops:latest
-      hostname: "zeebeops.sandbox.mifos.io"
+      hostname: "zeebeops.sandbox.fynarfin.io"
       tenants: "rhino,gorilla"
       ingress:
         enabled: true
@@ -367,11 +379,17 @@ ph-ee-g2psandbox:
       image: docker.io/openmf/message-gateway:latest
       MYSQL_USERNAME: "mifos"
       MYSQL_PASSWORD: "password"
-      DATASOURCE_URL: jdbc:mysql:thin://counselorservice.sytes.net:3306/messagegateway
+      DATASOURCE_URL: jdbc:mysql:thin://operationsmysql.sandbox.fynarfin.io:3306/messagegateway
       secret:
         value:
           api_key: "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
           project_id: "PJ5ff552ce01d2978c"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+      requests:
+        memory: "512M"
+        cpu: "100m"
       ingress:
         enabled: true   
         className: "public"
@@ -397,7 +415,7 @@ ph-ee-g2psandbox:
       datasource:
         username: "mifos"
         password: "password"
-        host: "counselorservice.sytes.net"
+        host: "operationsmysql.sandbox.fynarfin.io"
         port: 3306
         schema: "tenants"
     
@@ -469,7 +487,6 @@ ph-ee-g2psandbox:
             - path: /
               pathType: Prefix
 
-    
     kong:
       enabled: true
       ingress:
@@ -485,20 +502,21 @@ ph-ee-g2psandbox:
     vouchers:
       enabled: true
       image: docker.io/openmf/ph-ee-vouchers:latest
-
+      spring:
+        datasource:
+          url: jdbc:mysql://operationsmysql.sandbox.fynarfin.io:3306/voucher_management
+          username: mifos
+          password: password
       voucher:
         hostname: "https://vouchers.sandbox.fynarfin.io"
-
       salting:
         enabled: true
-
       identity-account-mapper:
         hostname: "https://identity-mapper.sandbox.fynarfin.io"
       operations:
         hostname: "https://ops-bk.sandbox.fynarfin.io"
         endpoints:
           transfers: "/api/v1/transfers?size=1&page=0"
-
       deployment:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
@@ -551,7 +569,7 @@ ph-ee-g2psandbox:
     image: docker.io/openmf/ph-ee-identity-account-mapper:latest
     spring:
       datasource:
-        url: jdbc:mysql:thin://counselorservice.sytes.net:3306/identity_account_mapper
+        url: jdbc:mysql:thin://operationsmysql.sandbox.fynarfin.io:3306/identity_account_mapper
         username: mifos
         password: password
     requests:

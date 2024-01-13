@@ -167,6 +167,39 @@ function deploy_mojaloop() {
     log OK "============================"
 }
 
+function configure_paymenthub_env_vars {
+    log DEBUG "Updating tenant datasource connections in config"
+    # application-tenantsConnection.properties
+    local file_name = "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT/config/application-tenantsConnection.properties"
+    local old_value = "operationsmysql"
+    local new_value = "$MYSQL_HOST"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    # db port
+    $old_value = "3306"
+    $new_value = "$MYSQL_PORT"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    # db user
+    $old_value = "mifos"
+    $new_value = "$MYSQL_USER"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    # db port
+    $old_value = "password"
+    $new_value = "$MYSQL_PASSWORD"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+
+    log DEBUG "Updating tenant datasource connections in ph_values.yaml"
+    $file_name = "$APPS_DIR/ph_values.yaml"
+    $old_value = "operationsmysql.sandbox.fynarfin.io"
+    $new_value = "$MYSQL_HOST"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+
+    log DEBUG "Updating hostname (DNS) in ph_values.yaml"
+    $file_name = "$APPS_DIR/ph_values.yaml"
+    $old_value = "sandbox.fynarfin.io"
+    $new_value = "$PH_HOSTNAME"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+}
+
 function configure_paymenthub() {
     local ph_chart_dir=$1
     local previous_dir="$PWD" # Save the current working directory
@@ -209,6 +242,7 @@ function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
     clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+    configure_paymenthub_env_vars
     configure_paymenthub "$APPS_DIR/$PHREPO_DIR/helm"
 
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
@@ -221,7 +255,8 @@ function deploy_paymenthub() {
     log OK "============================"
 }
 
-function update_phee (){
+function update_phee() {
+    configure_paymenthub_env_vars
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 }
 

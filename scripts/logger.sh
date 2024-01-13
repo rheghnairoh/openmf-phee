@@ -28,7 +28,7 @@ function log() {
         echo -e "${RED}ERROR: $logMessage ${RESET} "
         ;;
     *) # Default case
-        echo "$logLevel $logMessage"
+        echo -e "$logLevel $logMessage"
         ;;
   esac
 }

@@ -4,11 +4,11 @@ source ./scripts/config_env.sh
 source ./scripts/deployer.sh
 
 function welcome {
-    echo -e "${DEBUG}"
-    echo -e "============================================================="
-    echo -e "Payment Hub EE x Mojaloop Installer"
-    echo -e "============================================================="
-    echo -e "${RESET}"
+    log " \n"
+    log "===================================================="
+    log "       Payment Hub EE x Mojaloop Installer          "
+    log "===================================================="
+    log " \n"
 }
 
 function showUsage {
@@ -21,7 +21,7 @@ Options:
   -m mode ............... install|uninstall (-m is required)
   -u user................ user attached to the installation
   -h|H .................. display this message
-  
+
 Example 1 : sudo $0  -m install -u $USER # Install
 Example 2 : sudo $0  -m uninstall -u $USER # Uninstall everything
     **** Argument -m [mode] is required****
