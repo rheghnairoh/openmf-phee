@@ -3,7 +3,6 @@ ph-ee-g2psandbox:
     global:
       SPRING_PROFILES_ACTIVE: "bb"
       LOGGING_LEVEL_ROOT: "INFO"
-      LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
       tenants: "rhino,gorilla,lion"
       DFSPIDS: "gorilla,lion"
 
@@ -30,7 +29,7 @@ ph-ee-g2psandbox:
         enabled: false
 
     elasticsearch:
-      enabled: false
+      enabled: true
       #Single Node Solution
       clusterHealthCheckParams: "wait_for_status=yellow&timeout=100s"
       protocol: http
@@ -192,20 +191,54 @@ ph-ee-g2psandbox:
 
     kafka:
       enabled: true
-      image: "spotify/kafka"
-      advertised:
-        host: "kafka"
-        port: "9092"
-      deployment:
-        annotations:
-          deployTime: "{{ .Values.deployTime }}"
+      fullnameOverride: kafka
+      provisioning:
+        enabled: true
+        topics:
+          - name: zeebe-export
+            partitions: 1
+            replicationFactor: 1
+          - name: KAFKA_AUDITS_TOPIC
+            value: audits
+          - name: KAFKA_LOGS_TOPIC
+            value: logs
+          - name: AccountLookupBcRequests
+            value: AccountLookupBcRequests
+          - name: AccountLookupBcEvents
+            value: AccountLookupBcEvents
+          - name: AccountLookupBcResponses
+            value: AccountLookupBcResponses
+          - name: AccountLookupBcErrors
+            value: AccountLookupBcErrors
+          - name: OperatorBcErrors
+            value: OperatorBcErrors
+          - name: QuotingBcErrors
+            value: QuotingBcErrors
+          - name: QuotingBcEvents
+            value: QuotingBcEvents
+          - name: QuotingBcRequests
+            value: QuotingBcRequests
+          - name: SettlementsBcRequests
+            value: SettlementsBcRequests
+          - name: TransfersBcErrors
+            value: TransfersBcErrors
+          - name: TransfersBcEvents
+            value: TransfersBcEvents
+          - name: TransfersBcRequests
+            value: TransfersBcRequests
+          - name: SettlementsBcEvents
+            value: SettlementsBcEvents
+          - name: SettlementsBcCommands
+            value: SettlementsBcCommands
+          - name: PlatformConfigurationBcEvents
+            value: PlatformConfigurationBcEvents
 
     channel:
       enabled: true
       hostname: "channel.sandbox.mifos.io"
       stub_hostname: "channel-gsma.sandbox.mifos.io"
       SPRING_PROFILES_ACTIVE: "bb,tenants"
-      DFSPIDS: "rhino,gorilla"
+      DFSPIDS: "rhino,gorilla,lion"
       operations:
         url: "http://ph-ee-operations-app:5000/api/v1"
         authEnabled: false
