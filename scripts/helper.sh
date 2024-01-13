@@ -92,7 +92,7 @@ function deploy_helm_chart_from_dir() {
     # Enter the chart directory
     cd "$chart_dir" || exit 1
 
-    log DEBUG "Deploy helm chart $chart_dir..."
+    log DEBUG "Deploying helm chart $release_name from directory $chart_dir..."
     
     # Run helm dependency update to fetch dependencies
     log INFO "Updating Helm chart dependencies..."

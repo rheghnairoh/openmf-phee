@@ -4,7 +4,7 @@
 # GLOBAL VARS
 ########################################################################
 BASE_DIR=$(pwd)
-APPS_DIR="$BASE_DIR/apps/"
+APPS_DIR="$BASE_DIR/apps"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
@@ -12,14 +12,14 @@ MOJALOOPBRANCH="alpha-1.1"
 MOJALOOPREPO_DIR="mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
-MOJALOOP_LAYER_DIRS=("$BASE_DIR/apps/mojaloop/packages/deployment/k8s/crosscut" "$BASE_DIR/apps/mojaloop/packages/deployment/k8s/apps" "$BASE_DIR/apps/mojaloop/packages/deployment/k8s/ttk" )
-MOJALOOP_VALUES_FILE="$BASE_DIR/config/mojaloop_values.json"
+MOJALOOP_LAYER_DIRS=("$APPS_DIR/mojaloop/packages/deployment/k8s/crosscut" "$APPS_DIR/mojaloop/packages/deployment/k8s/apps" "$APPS_DIR/mojaloop/packages/deployment/k8s/ttk" )
+MOJALOOP_VALUES_FILE="$APPS_DIR/config/mojaloop_values.json"
 # paymenthub
 PHBRANCH="master"
-PHREPO_DIR="phee-labs"
+PHREPO_DIR="phee"
 PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
-PH_VALUES_FILE="$BASE_DIR/apps/ph_values.yaml"
+PH_VALUES_FILE="$APPS_DIR/ph_values.yaml"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
 # Define Kubernetes service and MySQL connection details
 MYSQL_SERVICE_NAME="mysql"  # Replace with your MySQL service name

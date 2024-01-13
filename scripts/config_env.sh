@@ -235,7 +235,7 @@ function print_end_message {
 }
 
 function uninstall_setup {
-    log DEBUG "Rolling back environment setup..."
+    log WARNING "Rolling back environment setup..."
     log INFO "Packages added externally require manual uninstall: \n" \
         " - docker : sudo snap remove docker \n" \
         " - microk8s : sudo snap remove microk8s \n" \
@@ -243,9 +243,9 @@ function uninstall_setup {
         " - sed : sudo apt-get remove sed \n" \
         " - jq : sudo apt-get remove jq \n"
 
-    log WARNING "Manually remove $k8s_user from microk8s group if needed\n" \
+    log DEBUG "Manually remove $k8s_user from microk8s group if needed\n" \
         " sudo gpasswd -d $k8s_user microk8s"
-    log WARNING "Manually remove $k8s_user from docker group if needed\n" \
+    log DEBUG "Manually remove $k8s_user from docker group if needed\n" \
         " sudo gpasswd -d $k8s_user docker"
 
     log INFO "Restoring kube config"
@@ -256,7 +256,7 @@ function uninstall_setup {
     mv $k8s_user_home/.bash_profile.bak $k8s_user_home/.bash_profile >>/dev/null 2>&1
 
     log INFO "Restoring hosts file"
-    mv /etc/hosts.bak /etc/hosts >>/dev/null 2>&1
+    sudo mv /etc/hosts.bak /etc/hosts >>/dev/null 2>&1
 
     log INFO "If installed, kubens, kubectx and kustomize can be safely removed"
 
@@ -270,7 +270,7 @@ function uninstall_setup {
     su - $k8s_user -c "helm repo remove paymenthub" >/dev/null 2>&1
     su - $k8s_user -c "helm repo update" >/dev/null 2>&1
 
-    log DEBUG "Rollback environment setup completed."
+    log WARNING "Rollback environment setup completed."
 }
 
 function setup_env {

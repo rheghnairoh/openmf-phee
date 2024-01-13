@@ -41,8 +41,8 @@ function apply_kube_manifests() {
 function run_failed_sql_statements() {
     log INFO "Fixing Operations App MySQL Race condition"
     operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
-    # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < src/mojafos/deployer/setup.sql
-    mysql -uroot -proot <src/mojafos/deployer/setup.sql
+    # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < apps/config/db_setup.sql
+    mysql -uroot -proot <apps/config/db_setup.sql
 
     if [ $? -eq 0 ]; then
         log INFO "SQL File execution successful"
@@ -206,9 +206,9 @@ function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
     clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
-    configure_paymenthub "$APPS_DIR$PHREPO_DIR/helm"
+    configure_paymenthub "$APPS_DIR/$PHREPO_DIR/helm"
 
-    deploy_helm_chart_from_dir "$APPS_DIR$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log DEBUG "Fixing paymenthub post deployment issues(might take a while)..."
     post_paymenthub_deployment_script >>/dev/null 2>&1
@@ -218,21 +218,25 @@ function deploy_paymenthub() {
     log OK "============================"
 }
 
-function uninstall_deployments {
-    log DEBUG "Uninstalling deployments..."
+function update_phee (){
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+}
 
-    log INFO "Uninstalling infrastructure - $INFRA_RELEASE_NAME in $INFRA_NAMESPACE."
+function uninstall_deployments {
+    log WARNING "Uninstalling deployments..."
+
+    log INFO "Uninstalling infrastructure - $INFRA_RELEASE_NAME in $INFRA_NAMESPACE namespace."
     su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME"
     su - $k8s_user -c "kubectl delete namespace $INFRA_NAMESPACE"
 
-    log INFO "Uninstalling paymenthub - $PH_RELEASE_NAME in $PH_NAMESPACE."
+    log INFO "Uninstalling paymenthub - $PH_RELEASE_NAME in $PH_NAMESPACE namespace."
     su - $k8s_user -c "helm uninstall $PH_RELEASE_NAME"
     su - $k8s_user -c "kubectl delete namespace $PH_NAMESPACE"
 
-    log INFO "Uninstalling mojaloop"
+    log INFO "Uninstalling mojaloop."
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 
-    log DEBUG "Deployments uninstalled."
+    log WARNING "Deployments uninstalled."
 }
 
 function print_end_message {
@@ -249,6 +253,7 @@ function print_end_message {
 function deploy_apps {
     log DEBUG "Deploying applications ..."
     deploy_paymenthub
+    deploy_infrastructure
     deploy_mojaloop
     print_end_message
 }
