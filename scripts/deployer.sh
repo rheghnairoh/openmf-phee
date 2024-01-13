@@ -190,8 +190,9 @@ function configure_paymenthub() {
     log DEBUG "Creating kibana secrets..."
     create_secret "$PH_NAMESPACE"
     # create_secret "$INFRA_NAMESPACE"
-    cd ..
-    kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
+    
+    # cd ..
+    # kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
     # check if the configuration was successful
     if [ $? -eq 0 ]; then
