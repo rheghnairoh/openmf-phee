@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS `lion`;
 CREATE DATABASE IF NOT EXISTS `identity_account_mapper`;
 CREATE DATABASE IF NOT EXISTS `voucher_management`;
 
-CREATE USER `mifos`@`%` IDENTIFIED BY `password`;
+CREATE USER IF NOT EXISTS 'mifos'@'%' IDENTIFIED BY 'password';
 
 GRANT ALL PRIVILEGES ON `tenants`.* TO 'mifos';
 GRANT ALL PRIVILEGES ON `messagegateway`.* TO 'mifos';

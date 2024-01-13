@@ -317,7 +317,8 @@ ph-ee-g2psandbox:
         cpu: "100m"
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: notifications.sandbox.fynarfin.io         
             paths: 
