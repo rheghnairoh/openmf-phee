@@ -21,7 +21,8 @@ ph-ee-g2psandbox:
     zeebe-operate-helm:
       ingress:
         enabled: false
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         path: /
         host: operate.sandbox.fynarfin.io
         tls:
@@ -252,8 +253,8 @@ ph-ee-g2psandbox:
           rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
-        className: "public"
-        annotations:
+        annotations: 
+          kubernetes.io/ingress.class: public
           nginx.ingress.kubernetes.io/use-regex: "true"
           nginx.ingress.kubernetes.io/rewrite-target: /$2
         hosts:
@@ -364,7 +365,8 @@ ph-ee-g2psandbox:
       tenants: "rhino,gorilla"
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: zeebeops.sandbox.fynarfin.io          
             paths: 
@@ -393,7 +395,8 @@ ph-ee-g2psandbox:
         cpu: "100m"
       ingress:
         enabled: true   
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: messagegateway.sandbox.fynarfin.io       
             paths: 
@@ -425,7 +428,8 @@ ph-ee-g2psandbox:
       image: docker.io/openmf/ph-ee-connector-mock-payment-schema:latest
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: mockpaymentschema.sandbox.fynarfin.io
             paths:
@@ -525,7 +529,8 @@ ph-ee-g2psandbox:
           rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         tls:
           - secretName: sandbox-secret
         hosts:
@@ -545,7 +550,8 @@ ph-ee-g2psandbox:
           rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         tls:
           - secretName: sandbox-secret
         hosts:
