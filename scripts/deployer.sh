@@ -190,7 +190,7 @@ function configure_paymenthub() {
     log DEBUG "Creating kibana secrets..."
     create_secret "$PH_NAMESPACE"
     # create_secret "$INFRA_NAMESPACE"
-    
+
     # cd ..
     # kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
@@ -214,7 +214,7 @@ function deploy_paymenthub() {
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log DEBUG "Fixing paymenthub post deployment issues(might take a while)..."
-    post_paymenthub_deployment_script >>/dev/null 2>&1
+    post_paymenthub_deployment_script
 
     log OK "============================"
     log OK "Paymenthub deployed."

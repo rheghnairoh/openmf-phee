@@ -266,7 +266,8 @@ ph-ee-g2psandbox:
       hostname: "ops.sandbox.mifos.io"
       ingress:
         enabled: true
-        className: "public"
+        annotations:
+          kubernetes.io/ingress.class: public
         hosts:
           - host: ops.sandbox.fynarfin.io          
             paths: 
