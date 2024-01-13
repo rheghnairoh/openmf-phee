@@ -243,9 +243,9 @@ function uninstall_deployments {
 }
 
 function print_end_message {
-    log "==========================="
-    log "INSTALLATION COMPLETED"
-    log "===========================\n"
+    log OK "==========================="
+    log OK "INSTALLATION COMPLETE"
+    log OK "==========================="
 
     log "Monitor pods using kubectl"
     log "kubectl get pods -n infra # Infrastructure"
