@@ -461,7 +461,8 @@ ph-ee-g2psandbox:
       image: docker.io/openmf/ph-ee-connector-crm:latest
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: connector-crm.sandbox.fynarfin.io
             paths:
