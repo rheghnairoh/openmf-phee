@@ -445,7 +445,8 @@ ph-ee-g2psandbox:
         contactpoint: "https://connector.sandbox.fynarfin.io"
       ingress:
         enabled: true
-        className: "public"
+        annotations: 
+          kubernetes.io/ingress.class: public
         hosts:
           - host: bill-pay.sandbox.fynarfin.io
             paths:
