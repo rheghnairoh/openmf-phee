@@ -561,7 +561,8 @@ ph-ee-g2psandbox:
         rollme: "{{ randAlphaNum 5 | quote }}"
     ingress:
       enabled: true
-      className: "public"
+      annotations:
+        kubernetes.io/ingress.class: public
       tls:
         - secretName: sandbox-secret
       hosts:
