@@ -53,8 +53,10 @@ sudo ./installer.sh -m install -u $USER
 
 ### Checking deployments using kubectl
 
+```bash
 kubectl get pods -n mojaloop #For testing mojaloop
 kubectl get pods -n paymenthub #For testing paymenthub
+```
 
 ### Uninstalling
 
