@@ -22,3 +22,9 @@ git checkout -f
 ```bash
 kubectl delete pod --field-selector=status.phase==Succeeded
 ```
+
+- Delete all errored pods by:
+
+```bash
+kubectl delete pod --field-selector=status.phase==Failed
+```

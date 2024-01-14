@@ -391,7 +391,7 @@ ph-ee-g2psandbox:
           api_key: "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
           project_id: "PJ5ff552ce01d2978c"
       limits:
-        memory: "1Gi"
+        memory: "2Gi"
         cpu: "1000m"
       requests:
         memory: "512M"
@@ -499,6 +499,17 @@ ph-ee-g2psandbox:
 
     kong:
       enabled: true
+      migrations:
+        init: true
+        preUpgrade: false
+        postUpgrade: false
+      env:
+        plugins: "bundled,oidc"
+        database: "postgres"
+        pg_host: "g2p-sandbox-postgresql"
+        pg_user: "keycloak"
+        pg_password: "keycloak"
+        pg_database: "kong"
       ingress:
         enabled: true
         ingressClassName: "kong"

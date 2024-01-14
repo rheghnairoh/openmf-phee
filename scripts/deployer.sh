@@ -100,10 +100,10 @@ function run_kong_migrations() {
 }
 
 function post_paymenthub_deployment_script() {
-    #Run migrations in Kong Pod
-    run_kong_migrations
     # Run failed MySQL statements.
     run_failed_sql_statements
+    #Run migrations in Kong Pod
+    run_kong_migrations
 }
 
 function configure_mojaloop() {
@@ -247,9 +247,6 @@ function deploy_paymenthub() {
 
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
-    log DEBUG "Fixing paymenthub post deployment issues(might take a while)..."
-    post_paymenthub_deployment_script
-
     log OK "============================"
     log OK "Paymenthub deployed."
     log OK "============================"
@@ -293,5 +290,9 @@ function deploy_apps {
     deploy_paymenthub
     deploy_infrastructure
     deploy_mojaloop
+
+    log DEBUG "Running paymenthub post install (might take a while)..."
+    post_paymenthub_deployment_script
+
     print_end_message
 }
