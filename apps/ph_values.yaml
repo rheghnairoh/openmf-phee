@@ -245,8 +245,11 @@ ph-ee-g2psandbox:
         host: "operationsmysql.sandbox.fynarfin.io"
         port: 3306
         schema: "tenants"
+      secret:
+        datasource:
+          host: "operationsmysql.sandbox.fynarfin.io"
       limits:
-        memory: "2Gi"
+        memory: "1Gi"
         cpu: "1000m"
       requests:
         memory: "516M"
@@ -386,13 +389,16 @@ ph-ee-g2psandbox:
       MYSQL_USERNAME: "mifos"
       MYSQL_PASSWORD: "password"
       DATASOURCE_URL: jdbc:mysql:thin://operationsmysql.sandbox.fynarfin.io:3306/messagegateway
+      operations_app:
+        datasource:
+          host: "operationsmysql.sandbox.fynarfin.io"
       secret:
         value:
           api_key: "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
           project_id: "PJ5ff552ce01d2978c"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "1Gi"
+        cpu: "500m"
       requests:
         memory: "512M"
         cpu: "100m"
@@ -541,6 +547,12 @@ ph-ee-g2psandbox:
       deployment:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+      requests:
+        memory: "512M"
+        cpu: "100m"
       ingress:
         enabled: true
         annotations: 
@@ -595,9 +607,12 @@ ph-ee-g2psandbox:
         url: jdbc:mysql:thin://operationsmysql.sandbox.fynarfin.io:3306/identity_account_mapper
         username: mifos
         password: password
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
     requests:
-      cpu: "500m"
       memory: "512M"
+      cpu: "100m"
     deployment:
       annotations:
         rollme: "{{ randAlphaNum 5 | quote }}"

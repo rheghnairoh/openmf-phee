@@ -2,7 +2,7 @@ apiVersion: v2
 description: Helm chart for infrastructure services
 name: infra
 version: 15.0.0
-appVersion: "console: 0.6.6; mongodb: 13.3.1; mongo-express: 3.1.1; elasticsearch:19.9.2; redis: 17.11.6"
+appVersion: "0.0.1"
 home: https://summerofcode.withgoogle.com/programs/2023/projects/oQk6Gmup
 icon: https://summerofcode.withgoogle.com/assets/media/logo.svg
 sources:

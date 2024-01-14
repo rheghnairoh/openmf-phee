@@ -102,8 +102,10 @@ function run_kong_migrations() {
 function post_paymenthub_deployment_script() {
     # Run failed MySQL statements.
     run_failed_sql_statements
-    #Run migrations in Kong Pod
-    run_kong_migrations
+    # Run migrations in Kong Pod
+    # Now using kong-init-migrations pod to run migrations
+    # run_kong_migrations 
+
 }
 
 function configure_mojaloop() {
