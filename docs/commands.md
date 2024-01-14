@@ -28,3 +28,10 @@ kubectl delete pod --field-selector=status.phase==Succeeded
 ```bash
 kubectl delete pod --field-selector=status.phase==Failed
 ```
+
+- Git make a file executable
+
+```bash
+git update-index --chmod=+x installer.sh # make installer.sh executable
+git ls-files --stage # check file mode 0755
+```

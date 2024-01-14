@@ -44,10 +44,6 @@ cd openmf-phee
 ```
 
 ```bash
-chmod +x installer.sh
-```
-
-```bash
 sudo ./installer.sh -m install -u $USER
 ```
 
