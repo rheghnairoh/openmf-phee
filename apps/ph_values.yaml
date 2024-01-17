@@ -500,6 +500,10 @@ ph-ee-g2psandbox:
 
     keycloak:
       enabled: true
+      postgresql:
+        postgresqlUsername: "keycloak"
+        postgresqlPassword: "keycloak"
+        postgresqlDatabase: "kong"
       ingress:
         enabled: true
         ingressClassName: "kong"
