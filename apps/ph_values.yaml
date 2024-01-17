@@ -249,7 +249,7 @@ ph-ee-g2psandbox:
         datasource:
           host: "operationsmysql.sandbox.fynarfin.io"
       limits:
-        memory: "1Gi"
+        memory: "2Gi"
         cpu: "1000m"
       requests:
         memory: "516M"
@@ -435,6 +435,12 @@ ph-ee-g2psandbox:
     mockpayment:
       enabled: true
       image: docker.io/openmf/ph-ee-connector-mock-payment-schema:latest
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+      requests:
+        memory: "512M"
+        cpu: "100m"
       ingress:
         enabled: true
         annotations: 
