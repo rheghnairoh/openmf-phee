@@ -142,9 +142,6 @@ ph-ee-g2psandbox:
     kafka:
       enabled: true
       fullnameOverride: kafka
-      nodeSelector: {}
-      tolerations: []
-      waitForKafka: true
       persistence:
         enabled: false
       zookeeper:
@@ -156,6 +153,8 @@ ph-ee-g2psandbox:
         waitForKafka: true
         numPartitions: 1
         replicationFactor: 1
+        nodeSelector: {}
+        tolerations: []
         topics:
         - name: zeebe-export
           partitions: 1
