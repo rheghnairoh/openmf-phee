@@ -200,6 +200,16 @@ function configure_paymenthub_env_vars {
     old_value="sandbox.fynarfin.io"
     new_value="$PH_HOSTNAME"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
+
+    log DEBUG "Updating message gateway keys in ph_values.yaml"
+    file_name="apps/ph_values.yaml"
+    old_value="eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
+    new_value="$PH_MESSAGE_GATEWAY_API_KEY"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    # project_id
+    old_value="PJ5ff552ce01d2978c"
+    new_value="$PH_MESSAGE_GATEWAY_PROJECT_ID"
+    replace_values_in_file "$file_name" "$old_value" "$new_value"
 }
 
 function configure_paymenthub() {

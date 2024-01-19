@@ -558,8 +558,8 @@ ph-ee-g2psandbox:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "1536M"
+        cpu: "1000m"
       requests:
         memory: "512M"
         cpu: "100m"
