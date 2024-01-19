@@ -142,6 +142,15 @@ ph-ee-g2psandbox:
     kafka:
       enabled: true
       fullnameOverride: kafka
+      nodeSelector: {}
+      tolerations: []
+      waitForKafka: true
+      persistence:
+        enabled: false
+      zookeeper:
+        persistence:
+          enabled: true
+        fullnameOverride: "zookeeper"
       provisioning:
         enabled: true
         waitForKafka: true
