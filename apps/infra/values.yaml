@@ -60,7 +60,7 @@ mongo-express:
   mongodbAdminPassword: mongoDbPas42
 
 kafka:
-  enabled: false
+  enabled: true
   fullnameOverride: "kafka"
 
   persistence:
