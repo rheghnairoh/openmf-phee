@@ -141,49 +141,62 @@ ph-ee-g2psandbox:
 
     kafka:
       enabled: true
-      fullnameOverride: kafka
+      fullnameOverride: "kafka"
+
+      persistence:
+        enabled: false
+
       controller:
-        replicaCount: 2
+        replicaCount: 1
+
+      zookeeper:
+        persistence:
+          enabled: true
+
+        fullnameOverride: "zookeeper"
+
       provisioning:
         enabled: true
+        numPartitions: 1
+        replicationFactor: 1
         topics:
-          - name: zeebe-export
-            partitions: 1
-            replicationFactor: 1
-          - name: KAFKA_AUDITS_TOPIC
-            value: audits
-          - name: KAFKA_LOGS_TOPIC
-            value: logs
-          - name: AccountLookupBcRequests
-            value: AccountLookupBcRequests
-          - name: AccountLookupBcEvents
-            value: AccountLookupBcEvents
-          - name: AccountLookupBcResponses
-            value: AccountLookupBcResponses
-          - name: AccountLookupBcErrors
-            value: AccountLookupBcErrors
-          - name: OperatorBcErrors
-            value: OperatorBcErrors
-          - name: QuotingBcErrors
-            value: QuotingBcErrors
-          - name: QuotingBcEvents
-            value: QuotingBcEvents
-          - name: QuotingBcRequests
-            value: QuotingBcRequests
-          - name: SettlementsBcRequests
-            value: SettlementsBcRequests
-          - name: TransfersBcErrors
-            value: TransfersBcErrors
-          - name: TransfersBcEvents
-            value: TransfersBcEvents
-          - name: TransfersBcRequests
-            value: TransfersBcRequests
-          - name: SettlementsBcEvents
-            value: SettlementsBcEvents
-          - name: SettlementsBcCommands
-            value: SettlementsBcCommands
-          - name: PlatformConfigurationBcEvents
-            value: PlatformConfigurationBcEvents
+        - name: zeebe-export
+          partitions: 1
+          replicationFactor: 1
+        - name: KAFKA_AUDITS_TOPIC
+          value: audits
+        - name: KAFKA_LOGS_TOPIC
+          value: logs
+        - name: AccountLookupBcRequests
+          value: AccountLookupBcRequests
+        - name: AccountLookupBcEvents
+          value: AccountLookupBcEvents
+        - name: AccountLookupBcResponses
+          value: AccountLookupBcResponses
+        - name: AccountLookupBcErrors
+          value: AccountLookupBcErrors
+        - name: OperatorBcErrors
+          value: OperatorBcErrors
+        - name: QuotingBcErrors
+          value: QuotingBcErrors
+        - name: QuotingBcEvents
+          value: QuotingBcEvents
+        - name: QuotingBcRequests
+          value: QuotingBcRequests
+        - name: SettlementsBcRequests
+          value: SettlementsBcRequests
+        - name: TransfersBcErrors
+          value: TransfersBcErrors
+        - name: TransfersBcEvents
+          value: TransfersBcEvents
+        - name: TransfersBcRequests
+          value: TransfersBcRequests
+        - name: SettlementsBcEvents
+          value: SettlementsBcEvents
+        - name: SettlementsBcCommands
+          value: SettlementsBcCommands
+        - name: PlatformConfigurationBcEvents
+          value: PlatformConfigurationBcEvents
 
     channel:
       enabled: true
