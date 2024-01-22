@@ -21,7 +21,7 @@ ph-ee-g2psandbox:
     zeebe-operate-helm:
       ingress:
         enabled: false
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         path: /
         host: operate.sandbox.fynarfin.io
@@ -66,23 +66,23 @@ ph-ee-g2psandbox:
           host: "operationsmysql.sandbox.fynarfin.io"
       deployment:
         annotations:
-          rollme: '{{ randAlphaNum 5 | quote }}'
+          rollme: "{{ randAlphaNum 5 | quote }}"
       ams_local_interop_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_account_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_customer_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_auth_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_loan_host: "https://fynams.sandbox.fynarfin.io/"
       ingress:
-        enabled: true 
+        enabled: true
         hosts:
-          - host: ams-mifos.sandbox.fynarfin.io          
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: ph-ee-connector-ams-mifos
-                  port:
-                    number: 80
+          - host: ams-mifos.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: ph-ee-connector-ams-mifos
+                    port:
+                      number: 80
           - host: ams-mifos-mock.sandbox.fynarfin.io
             paths:
               - path: "/"
@@ -130,73 +130,18 @@ ph-ee-g2psandbox:
         tls:
           - secretName: fyn-cert
         hosts:
-          - host: mojaloop.sandbox.fynarfin.io          
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: ph-ee-connector-mojaloop-java
-                  port:
-                    number: 80
+          - host: mojaloop.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: ph-ee-connector-mojaloop-java
+                    port:
+                      number: 80
 
     kafka:
-      enabled: true
+      enabled: false
       fullnameOverride: "kafka"
-
-      persistence:
-        enabled: false
-
-      controller:
-        replicaCount: 1
-
-      zookeeper:
-        persistence:
-          enabled: true
-
-        fullnameOverride: "zookeeper"
-
-      provisioning:
-        enabled: true
-        numPartitions: 1
-        replicationFactor: 1
-        topics:
-        - name: zeebe-export
-          partitions: 1
-          replicationFactor: 1
-        - name: KAFKA_AUDITS_TOPIC
-          value: audits
-        - name: KAFKA_LOGS_TOPIC
-          value: logs
-        - name: AccountLookupBcRequests
-          value: AccountLookupBcRequests
-        - name: AccountLookupBcEvents
-          value: AccountLookupBcEvents
-        - name: AccountLookupBcResponses
-          value: AccountLookupBcResponses
-        - name: AccountLookupBcErrors
-          value: AccountLookupBcErrors
-        - name: OperatorBcErrors
-          value: OperatorBcErrors
-        - name: QuotingBcErrors
-          value: QuotingBcErrors
-        - name: QuotingBcEvents
-          value: QuotingBcEvents
-        - name: QuotingBcRequests
-          value: QuotingBcRequests
-        - name: SettlementsBcRequests
-          value: SettlementsBcRequests
-        - name: TransfersBcErrors
-          value: TransfersBcErrors
-        - name: TransfersBcEvents
-          value: TransfersBcEvents
-        - name: TransfersBcRequests
-          value: TransfersBcRequests
-        - name: SettlementsBcEvents
-          value: SettlementsBcEvents
-        - name: SettlementsBcCommands
-          value: SettlementsBcCommands
-        - name: PlatformConfigurationBcEvents
-          value: PlatformConfigurationBcEvents
 
     channel:
       enabled: true
@@ -218,7 +163,7 @@ ph-ee-g2psandbox:
       server:
         ssl:
           keyPassword: "password"
-          keyStorePassword: "password"   
+          keyStorePassword: "password"
       deployment:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
@@ -226,26 +171,25 @@ ph-ee-g2psandbox:
         annotations:
           konghq.com/protocol: "https"
       ingress:
-        enabled: true 
+        enabled: true
         className: "kong"
         hosts:
-          - host: channel.sandbox.fynarfin.io          
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-connector-channel"
-                  port:
-                    number: 8443
-          - host: channel-gsma.sandbox.fynarfin.io          
-            paths:          
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-connector-channel-gsma"
-                  port:
-                    number: 82  
-             
+          - host: channel.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-channel"
+                    port:
+                      number: 8443
+          - host: channel-gsma.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-channel-gsma"
+                    port:
+                      number: 82
 
     operations_app:
       enabled: true
@@ -265,25 +209,25 @@ ph-ee-g2psandbox:
         cpu: "1000m"
       requests:
         memory: "516M"
-        cpu: "500m"  
+        cpu: "500m"
       deployment:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
           nginx.ingress.kubernetes.io/use-regex: "true"
           nginx.ingress.kubernetes.io/rewrite-target: /$2
         hosts:
-          - host: ""        
-            paths: 
-            - path: "/operations(/|$)(.*)"
-              backend:
-                service:
-                  name: "ph-ee-operations-app"
-                  port:
-                    number: 80 
+          - host: ""
+            paths:
+              - path: "/operations(/|$)(.*)"
+                backend:
+                  service:
+                    name: "ph-ee-operations-app"
+                    port:
+                      number: 80
 
     operations_web:
       enabled: true
@@ -294,14 +238,14 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: ops.sandbox.fynarfin.io          
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-operations-web"
-                  port:
-                    number: 4200            
+          - host: ops.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-operations-web"
+                    port:
+                      number: 4200
 
     identity:
       hostname: "ops-bk.sandbox.fynarfin.io"
@@ -310,20 +254,20 @@ ph-ee-g2psandbox:
       enabled: true
       image: docker.io/openmf/ph-ee-connector-gsma:latest
       ingress:
-        enabled: true  
+        enabled: true
 
     ph_ee_connector_slcb:
       enabled: false
-    
+
     mpesa:
       enabled: false
-      
+
     roster_connector:
       enabled: false
-      
+
     paygops_connector:
       enabled: false
-      
+
     notifications:
       enabled: true
       image: docker.io/openmf/ph-ee-notifications:latest
@@ -336,17 +280,17 @@ ph-ee-g2psandbox:
         cpu: "100m"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: notifications.sandbox.fynarfin.io         
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-connector-notifications"
-                  port:
-                    number: 80 
+          - host: notifications.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-notifications"
+                    port:
+                      number: 80
 
     connector_bulk:
       enabled: true
@@ -367,15 +311,15 @@ ph-ee-g2psandbox:
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: bulk-connector.sandbox.fynarfin.io     
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-connector-bulk"
-                  port:
-                    number: 8443   
-          
+          - host: bulk-connector.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-connector-bulk"
+                    port:
+                      number: 8443
+
     zeebe_ops:
       enabled: true
       image: docker.io/openmf/ph-ee-zeebe-ops:latest
@@ -383,17 +327,17 @@ ph-ee-g2psandbox:
       tenants: "rhino,gorilla"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: zeebeops.sandbox.fynarfin.io          
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "ph-ee-zeebe-ops"
-                  port:
-                    number: 80
+          - host: zeebeops.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "ph-ee-zeebe-ops"
+                    port:
+                      number: 80
 
     messagegateway:
       enabled: true
@@ -415,19 +359,19 @@ ph-ee-g2psandbox:
         memory: "512M"
         cpu: "100m"
       ingress:
-        enabled: true   
-        annotations: 
+        enabled: true
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: messagegateway.sandbox.fynarfin.io       
-            paths: 
-            - path: "/"
-              backend:
-                service:
-                  name: "message-gateway"
-                  port:
-                    number: 80
-                            
+          - host: messagegateway.sandbox.fynarfin.io
+            paths:
+              - path: "/"
+                backend:
+                  service:
+                    name: "message-gateway"
+                    port:
+                      number: 80
+
     importer_es:
       enabled: true
       image: docker.io/openmf/ph-ee-importer-es:latest
@@ -443,7 +387,11 @@ ph-ee-g2psandbox:
         host: "operationsmysql.sandbox.fynarfin.io"
         port: 3306
         schema: "tenants"
-    
+      deployment:
+        extraEnvs:
+          - name: kafka_brokers
+            value: "kafka.infra.svc.cluster.local:9092"
+
     mockpayment:
       enabled: true
       image: docker.io/openmf/ph-ee-connector-mock-payment-schema:latest
@@ -455,7 +403,7 @@ ph-ee-g2psandbox:
         cpu: "100m"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
           - host: mockpaymentschema.sandbox.fynarfin.io
@@ -476,7 +424,7 @@ ph-ee-g2psandbox:
         contactpoint: "https://connector.sandbox.fynarfin.io"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
           - host: bill-pay.sandbox.fynarfin.io
@@ -492,7 +440,7 @@ ph-ee-g2psandbox:
       image: docker.io/openmf/ph-ee-connector-crm:latest
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         hosts:
           - host: connector-crm.sandbox.fynarfin.io
@@ -507,7 +455,7 @@ ph-ee-g2psandbox:
     wildcardhostname: "*.sandbox.fynarfin.io"
     tls: ""
 
-    post_installation_job: 
+    post_installation_job:
       enabled: true
 
     keycloak:
@@ -520,10 +468,10 @@ ph-ee-g2psandbox:
         enabled: true
         ingressClassName: "kong"
         rules:
-          - host: 'keycloak.sandbox.fynarfin.io'
+          - host: "keycloak.sandbox.fynarfin.io"
             paths:
-            - path: /
-              pathType: Prefix
+              - path: /
+                pathType: Prefix
 
     kong:
       enabled: true
@@ -541,7 +489,7 @@ ph-ee-g2psandbox:
       ingress:
         enabled: true
         ingressClassName: "kong"
-        hostname: admin-kong.sandbox.fynarfin.io 
+        hostname: admin-kong.sandbox.fynarfin.io
 
     redis:
       enabled: true
@@ -577,7 +525,7 @@ ph-ee-g2psandbox:
         cpu: "100m"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         tls:
           - secretName: sandbox-secret
@@ -598,7 +546,7 @@ ph-ee-g2psandbox:
           rollme: "{{ randAlphaNum 5 | quote }}"
       ingress:
         enabled: true
-        annotations: 
+        annotations:
           kubernetes.io/ingress.class: public
         tls:
           - secretName: sandbox-secret
@@ -653,7 +601,3 @@ ph-ee-g2psandbox:
                   name: "ph-ee-identity-account-mapper"
                   port:
                     number: 80
-
-                  
-
-

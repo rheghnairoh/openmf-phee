@@ -29,3 +29,8 @@ dependencies:
   condition: mongo-express.enabled
   repository: https://cowboysysop.github.io/charts/
   version: 3.1.1
+## kafka 
+- name: kafka
+  condition: kafka.enabled
+  repository: https://charts.bitnami.com/bitnami
+  version: 19.0.2
