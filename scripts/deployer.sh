@@ -299,8 +299,8 @@ function print_end_message {
 
 function deploy_apps {
     log DEBUG "Deploying applications ..."
-    deploy_paymenthub
     deploy_infrastructure
+    deploy_paymenthub
     deploy_mojaloop
 
     log DEBUG "Running paymenthub post install (might take a while)..."
