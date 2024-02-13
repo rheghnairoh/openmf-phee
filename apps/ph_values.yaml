@@ -1,5 +1,6 @@
 ph-ee-g2psandbox:
-  ph-ee-engine:    global:
+  ph-ee-engine:
+    global:
       SPRING_PROFILES_ACTIVE: "bb"
       LOGGING_LEVEL_ROOT: "INFO"
       tenants: "rhino,gorilla,lion"
