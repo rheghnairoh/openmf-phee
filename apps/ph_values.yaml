@@ -15,14 +15,11 @@ ph-ee-g2psandbox:
 
     zeebe-operate-helm:
       ingress:
-        enabled: false
+        enabled: true
         annotations:
           kubernetes.io/ingress.class: public
-        path: /
-        host: operate.sandbox.fynarfin.io
-        tls:
-          enabled: true
-
+        host: operate.sandbox.fynarfin.io 
+      
     kibana:
       ingress:
         enabled: true
@@ -32,7 +29,7 @@ ph-ee-g2psandbox:
         # kubernetes.io/ingress.class: nginx
         # kubernetes.io/tls-acme: "true"
         hosts:
-          - host: analytics-demo.sandbox.fynarfin.io
+          - host: analytics.sandbox.fynarfin.io
             paths:
               - path: /
 
@@ -46,7 +43,7 @@ ph-ee-g2psandbox:
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: connector-demo.sandbox.mifos.io
+          - host: connector.sandbox.mifos.io
             paths:
               - path: "/"
                 backend:
@@ -72,17 +69,17 @@ ph-ee-g2psandbox:
       ams_local_auth_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_loan_host: "https://fynams.sandbox.fynarfin.io/"
       ingress:
-        enabled: true
+        enabled: true 
         hosts:
-          - host: ams-mifos-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: ph-ee-connector-ams-mifos
-                    port:
-                      number: 80
-          - host: ams-mifos-mock-demo.sandbox.fynarfin.io
+          - host: ams-mifos.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: ph-ee-connector-ams-mifos
+                  port:
+                    number: 80
+          - host: ams-mifos-mock.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -114,7 +111,7 @@ ph-ee-g2psandbox:
           - name: parties_0_domain
             value: "https://fynams.sandbox.fynarfin.io/"
           - name: parties_1_domain
-            value: "mojaloop-demo.sandbox.fynarfin.io"
+            value: "mojaloop.sandbox.fynarfin.io"
           - name: parties_0_tenantId
             value: "gorilla"
           - name: parties_1_tenantId
@@ -129,14 +126,14 @@ ph-ee-g2psandbox:
         tls:
           - secretName: fyn-cert
         hosts:
-          - host: mojaloop-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: ph-ee-connector-mojaloop-java
-                    port:
-                      number: 80
+          - host: mojaloop.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: ph-ee-connector-mojaloop-java
+                  port:
+                    number: 80
 
     # kafka:
     #   enabled: true
@@ -176,23 +173,23 @@ ph-ee-g2psandbox:
           kubernetes.io/ingress.class: public
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
         hosts:
-          - host: channel-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-channel"
-                    port:
-                      number: 8443
-          - host: channel-gsma-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-channel-gsma"
-                    port:
-                      number: 82
-
+          - host: channel.sandbox.fynarfin.io          
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-channel"
+                  port:
+                    number: 8443
+          - host: channel-gsma.sandbox.fynarfin.io          
+            paths:          
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-channel-gsma"
+                  port:
+                    number: 82  
+             
 
     operations_app:
       enabled: true
@@ -241,7 +238,7 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: ops-demo.sandbox.fynarfin.io
+          - host: ops.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -250,9 +247,9 @@ ph-ee-g2psandbox:
                     port:
                       number: 4200
       backend:
-        PH_OPS_BACKEND_SERVER_URL: https://ops-bk-demo.sandbox.fynarfin.io/api/v1
-        PH_VOU_BACKEND_SERVER_URL: https://vouchers-demo.sandbox.fynarfin.io
-        PH_ACT_BACKEND_SERVER_URL: https://identity-mapper-demo.sandbox.fynarfin.io
+        PH_OPS_BACKEND_SERVER_URL: https://ops-bk.sandbox.fynarfin.io/api/v1
+        PH_VOU_BACKEND_SERVER_URL: https://vouchers.sandbox.fynarfin.io
+        PH_ACT_BACKEND_SERVER_URL: https://identity-mapper.sandbox.fynarfin.io
         PH_PLATFORM_TENANT_ID: gorilla
         PH_PLATFORM_TENANT_IDS: gorilla
         PH_REGISTERING_INSTITUTION_ID: 123
@@ -302,14 +299,14 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: notifications-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-notifications"
-                    port:
-                      number: 80
+          - host: notifications.sandbox.fynarfin.io         
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-notifications"
+                  port:
+                    number: 80 
 
 
     connector_bulk:
@@ -320,26 +317,26 @@ ph-ee-g2psandbox:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
       operations_app:
-        contactpoint: "https://ops-bk-demo.sandbox.fynarfin.io/"
+        contactpoint: "https://ops-bk.sandbox.fynarfin.io/"
         endpoints:
           batch_transaction: "/api/v1/batch/transactions"
       identity_account_mapper:
-        hostname: "https://identity-mapper-demo.sandbox.fynarfin.io"
+        hostname: "https://identity-mapper.sandbox.fynarfin.io"
       ingress:
         enabled: true
         className: "public"
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: bulk-connector-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "ph-ee-connector-bulk"
-                    port:
-                      number: 8443
-
+          - host: bulk-connector.sandbox.fynarfin.io     
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "ph-ee-connector-bulk"
+                  port:
+                    number: 8443   
+          
     zeebe_ops:
       enabled: true
       tenants: "rhino,gorilla"
@@ -348,7 +345,7 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: zeebeops-demo.sandbox.fynarfin.io
+          - host: zeebeops.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -381,15 +378,15 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: messagegateway-demo.sandbox.fynarfin.io
-            paths:
-              - path: "/"
-                backend:
-                  service:
-                    name: "message-gateway"
-                    port:
-                      number: 80
-
+          - host: messagegateway.sandbox.fynarfin.io       
+            paths: 
+            - path: "/"
+              backend:
+                service:
+                  name: "message-gateway"
+                  port:
+                    number: 80
+                            
     importer_es:
       enabled: true
       image: docker.io/openmf/ph-ee-importer-es:latest
@@ -424,7 +421,7 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: mockpaymentschema-demo.sandbox.fynarfin.io
+          - host: mockpaymentschema.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -437,15 +434,15 @@ ph-ee-g2psandbox:
       enabled: true
       image: docker.io/openmf/ph-ee-bill-pay:latest
       billpay:
-        contactpoint: "https://bill-pay-demo.sandbox.fynarfin.io"
+        contactpoint: "https://bill-pay.sandbox.fynarfin.io"
       connector:
-        contactpoint: "https://connector-demo.sandbox.fynarfin.io"
+        contactpoint: "https://connector.sandbox.fynarfin.io"
       ingress:
         enabled: true
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: bill-pay-demo.sandbox.fynarfin.io
+          - host: bill-pay.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -461,7 +458,7 @@ ph-ee-g2psandbox:
         annotations:
           kubernetes.io/ingress.class: public
         hosts:
-          - host: connector-crm-demo.sandbox.fynarfin.io
+          - host: connector-crm.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -524,15 +521,15 @@ ph-ee-g2psandbox:
           username: mifos
           password: password
       voucher:
-        hostname: "https://vouchers-demo.sandbox.fynarfin.io"
+        hostname: "https://vouchers.sandbox.fynarfin.io"
 
       salting:
         enabled: true
 
       identity-account-mapper:
-        hostname: "https://identity-mapper-demo.sandbox.fynarfin.io"
+        hostname: "https://identity-mapper.sandbox.fynarfin.io"
       operations:
-        hostname: "https://ops-bk-demo.sandbox.fynarfin.io"
+        hostname: "https://ops-bk.sandbox.fynarfin.io"
         endpoints:
           transfers: "/api/v1/transfers?size=1&page=0"
 
@@ -552,7 +549,7 @@ ph-ee-g2psandbox:
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: vouchers-demo.sandbox.fynarfin.io
+          - host: vouchers.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -573,7 +570,7 @@ ph-ee-g2psandbox:
         tls:
           - secretName: sandbox-secret
         hosts:
-          - host: connector-demo.sandbox.fynarfin.io
+          - host: connector.sandbox.fynarfin.io
             paths:
               - path: "/"
                 backend:
@@ -589,7 +586,7 @@ ph-ee-g2psandbox:
           kubernetes.io/ingress.class: "public"
           nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
         hosts:
-          - minio-console-demo.sandbox.fynarfin.io
+          - minio-console.sandbox.fynarfin.io
   account_mapper:
     enabled: true
     image: docker.io/openmf/ph-ee-identity-account-mapper:latest
@@ -614,7 +611,7 @@ ph-ee-g2psandbox:
       tls:
         - secretName: sandbox-secret
       hosts:
-        - host: identity-mapper-demo.sandbox.fynarfin.io
+        - host: identity-mapper.sandbox.fynarfin.io
           paths:
             - path: "/"
               backend:
