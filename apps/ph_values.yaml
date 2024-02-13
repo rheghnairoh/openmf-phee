@@ -208,8 +208,8 @@ ph-ee-g2psandbox:
         datasource:
           host: "operationsmysql.sandbox.fynarfin.io"
       limits:
-        memory: "2Gi"
-        cpu: "1000m"
+        memory: "2G"
+        cpu: "1"
       requests:
         memory: "516M"
         cpu: "500m"
@@ -291,8 +291,8 @@ ph-ee-g2psandbox:
       image: docker.io/openmf/ph-ee-notifications:latest
       NOTIFICATION_FAILURE_ENABLED: "false"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
+        memory: "2G"
+        cpu: "1"
       requests:
         memory: "512M"
         cpu: "100m"
@@ -370,11 +370,11 @@ ph-ee-g2psandbox:
           api_key: "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
           project_id: "PJ5ff552ce01d2978c"
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "2G"
+        cpu: "1"
       requests:
         memory: "512M"
-        cpu: "100m"
+        cpu: "200m"
       ingress:
         enabled: true
         annotations:
@@ -413,11 +413,11 @@ ph-ee-g2psandbox:
       enabled: true
       image: docker.io/openmf/ph-ee-connector-mock-payment-schema:latest
       limits:
-        memory: "1Gi"
-        cpu: "500m"
+        memory: "2G"
+        cpu: "1"
       requests:
         memory: "512M"
-        cpu: "100m"
+        cpu: "200m"
       ingress:
         enabled: true
         annotations:
@@ -539,11 +539,11 @@ ph-ee-g2psandbox:
         annotations:
           rollme: "{{ randAlphaNum 5 | quote }}"
       limits:
-        memory: "1536M"
-        cpu: "1000m"
+        memory: "2G"
+        cpu: "1"
       requests:
         memory: "512M"
-        cpu: "100m"
+        cpu: "200m"
       ingress:
         enabled: true
         annotations:
@@ -598,11 +598,11 @@ ph-ee-g2psandbox:
         username: mifos
         password: password
     limits:
-      memory: "1Gi"
-      cpu: "1000m"
+      memory: "2G"
+      cpu: "1"
     requests:
       memory: "512M"
-      cpu: "100m"
+      cpu: "200m"
     deployment:
       annotations:
         rollme: "{{ randAlphaNum 5 | quote }}"
