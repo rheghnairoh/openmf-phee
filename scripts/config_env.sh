@@ -89,7 +89,7 @@ function configure_microk8s {
     microk8s config >$k8s_user_home/.kube/config
 
     log INFO "Activating group changes"
-    su - $USER >>/dev/null 2>&1
+    su - $USER
 
     log OK "Microk8s configuration complete"
 }
@@ -109,7 +109,7 @@ function install_prerequisites {
             sudo groupadd docker
             sudo usermod -aG docker $k8s_user
             log INFO "Activating group changes"
-            newgrp docker >>/dev/null 2>&1
+            /usr/bin/newgrp docker
         fi
 
         # Check if nc (netcat) is installed
