@@ -109,7 +109,8 @@ function install_prerequisites {
             sudo groupadd docker
             sudo usermod -aG docker $k8s_user
             log INFO "Activating group changes"
-            newgrp docker
+            # newgrp docker
+            su - $USER
         fi
 
         # Check if nc (netcat) is installed
