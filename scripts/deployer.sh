@@ -172,7 +172,7 @@ function deploy_mojaloop() {
 function configure_paymenthub_env_vars {
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     # application-tenantsConnection.properties
-    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT/config/application-tenantsConnection.properties"
+    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
     local old_value="operationsmysql"
     local new_value="$MYSQL_HOST"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
@@ -215,7 +215,11 @@ function configure_paymenthub_env_vars {
 function configure_paymenthub() {
     local ph_chart_dir=$1
     local previous_dir="$PWD" # Save the current working directory
-    log DEBUG "Configuring Payment Hub..."
+    log INFO "Configuring Payment Hub..."
+
+    LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
+    log DEBUG "Creating prometheus operator resources ${LATEST}"
+    su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
 
     cd $ph_chart_dir || exit 1
 
@@ -257,7 +261,7 @@ function deploy_paymenthub() {
     configure_paymenthub_env_vars
     configure_paymenthub "$APPS_DIR/$PHREPO_DIR/helm"
 
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -266,7 +270,7 @@ function deploy_paymenthub() {
 
 function update_phee() {
     configure_paymenthub_env_vars
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 }
 
 function uninstall_deployments {
