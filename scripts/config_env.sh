@@ -180,7 +180,18 @@ function add_hosts {
 }
 
 function install_k8s_tools {
-    log DEBUG "Recommendation - install kubernetes tools: kubens, kubectx and kustomize"
+    # Check if kubens is installed
+    if ! command -v kubens &>/dev/null; then
+        log DEBUG "Installing kubernetes tools: kubens and kustomize\n" \
+            "   - https://github.com/ahmetb/kubectx"
+        
+        sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx >>/dev/null 2>&1
+        sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
+        sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens
+    else
+        log INFO "Kubens, kubectx is installed."
+    fi
+
 }
 
 function add_helm_repos {
