@@ -42,7 +42,7 @@ function run_failed_sql_statements() {
     log INFO "Fixing Operations App MySQL Race condition"
     operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
     # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < apps/config/db_setup.sql
-    mysql -u $MYSQL_USER -p $MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT  < $MYSQL_INIT_FILE
+    mariadb -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT  < $MYSQL_INIT_FILE
 
     if [ $? -eq 0 ]; then
         log INFO "SQL File execution successful"

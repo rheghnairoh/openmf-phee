@@ -37,7 +37,7 @@ ph-ee-g2psandbox:
           memory: "8G"
       volumeClaimTemplate:
         # accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "standard"
+        storageClassName: "microk8s-hostpath"
         resources:
           requests:
             storage: 20Gi
@@ -386,11 +386,6 @@ ph-ee-g2psandbox:
         hostname: "https://identity-mapper.sandbox.fynarfin.io"
       ingress:
         enabled: true
-        className: "public"
-        annotations:
-          kubernetes.io/ingress.class: public
-        tls:
-          - secretName: sandbox-secret
         hosts:
           - host: bulk-connector.sandbox.fynarfin.io     
             paths: 
