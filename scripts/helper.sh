@@ -122,10 +122,10 @@ function deploy_helm_chart_from_dir() {
     else
         log ERROR "Helm chart $release_name deployment failed."
         if [[ "$release_name" == "$PH_RELEASE_NAME" ]]; then
-            log ERROR "Payment hub EE installation failed, cannot resume deploying other applications. \n" \
+            log ERROR "Payment hub EE installation failed \n" \
                 "Consider uninstalling: sudo ./installer.sh -m uninstall -u $k8s_user \n" \
                 "And install again: sudo ./installer.sh -m install -u $k8s_user"
-            exit 1
+            # exit 1
         fi
 
     fi
