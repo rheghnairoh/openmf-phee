@@ -387,6 +387,8 @@ ph-ee-g2psandbox:
       ingress:
         enabled: true
         className: "public"
+        annotations:
+          kubernetes.io/ingress.class: public
         tls:
           - secretName: sandbox-secret
         hosts:
