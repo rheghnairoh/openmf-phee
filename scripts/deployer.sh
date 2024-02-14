@@ -172,7 +172,7 @@ function deploy_mojaloop() {
 function configure_paymenthub_env_vars {
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     # application-tenantsConnection.properties
-    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT/config/application-tenantsConnection.properties"
+    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
     local old_value="operationsmysql"
     local new_value="$MYSQL_HOST"
     replace_values_in_file "$file_name" "$old_value" "$new_value"
@@ -261,7 +261,7 @@ function deploy_paymenthub() {
     configure_paymenthub_env_vars
     configure_paymenthub "$APPS_DIR/$PHREPO_DIR/helm"
 
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -270,7 +270,7 @@ function deploy_paymenthub() {
 
 function update_phee() {
     configure_paymenthub_env_vars
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-SIT" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 }
 
 function uninstall_deployments {

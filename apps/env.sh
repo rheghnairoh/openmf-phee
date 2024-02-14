@@ -15,7 +15,7 @@ MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
 MOJALOOP_LAYER_DIRS=("$APPS_DIR/mojaloop/packages/deployment/k8s/crosscut" "$APPS_DIR/mojaloop/packages/deployment/k8s/apps" "$APPS_DIR/mojaloop/packages/deployment/k8s/ttk" )
 MOJALOOP_VALUES_FILE="$APPS_DIR/config/mojaloop_values.json"
 # paymenthub
-PHBRANCH="v1.4.0-release"
+PHBRANCH="master"
 PHREPO_DIR="phee"
 PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
