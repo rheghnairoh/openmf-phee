@@ -175,6 +175,11 @@ ph-ee-g2psandbox:
     kafka:
       enabled: true
       fullnameOverride: kafka
+      controller:
+        replicaCount: 6
+      extraConfig: |
+        offsets.topic.replication.factor=2
+        transaction.state.log.replication.factor=2 
       provisioning:
         enabled: true
         topics:
