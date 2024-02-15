@@ -176,16 +176,20 @@ ph-ee-g2psandbox:
       enabled: true
       fullnameOverride: kafka
       controller:
-        replicaCount: 6
+        replicaCount: 3
       extraConfig: |
-        offsets.topic.replication.factor=2
-        transaction.state.log.replication.factor=2 
+        default.replication.factor=3
+        offsets.topic.replication.factor=3
+        transaction.state.log.replication.factor=3
+      env:
+        - name: "KAFKA_HEAP_OPTS"
+          value: "-Xms2G -Xmx4G"
       provisioning:
         enabled: true
         topics:
           - name: zeebe-export
-            partitions: 1
-            replicationFactor: 1
+            # partitions: 1
+            # replicationFactor: 1
           - name: KAFKA_AUDITS_TOPIC
             value: audits
           - name: KAFKA_LOGS_TOPIC
