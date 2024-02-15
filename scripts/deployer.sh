@@ -279,18 +279,27 @@ function deploy_paymenthub() {
 function update_infrastructure() {
     log DEBUG "Updating infrastructure"
     deploy_helm_chart_from_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    log OK "==========================="
+    log OK "Infrastructure updated."
+    log OK "==========================="
 }
 
 function update_paymenthub() {
     log DEBUG "Updating paymenthub"
     configure_paymenthub_env_vars
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    log OK "==========================="
+    log OK "Paymenthub updated."
+    log OK "==========================="
 }
 
 function update_mojaloop() {
     log DEBUG "Updating mojaloop"
     configure_mojaloop
     deploy_mojaloop_layers
+    log OK "==========================="
+    log OK "Mojaloop updated."
+    log OK "==========================="
 }
 
 function update_apps {
@@ -298,6 +307,9 @@ function update_apps {
     update_infrastructure
     update_paymenthub
     update_mojaloop
+    log OK "==========================="
+    log OK "All deployments updated."
+    log OK "==========================="
 }
 
 function uninstall_infrastructure() {
@@ -327,7 +339,7 @@ function uninstall_apps {
 
 function print_end_message {
     log OK "==========================="
-    log OK "INSTALLATION COMPLETE"
+    log OK "INSTALLATION COMPLETED."
     log OK "==========================="
 
     log "Monitor pods using kubectl"
