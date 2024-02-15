@@ -42,7 +42,7 @@ function run_failed_sql_statements() {
     log INFO "Fixing Operations App MySQL Race condition"
     operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
     # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < apps/config/db_setup.sql
-    mariadb -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT  < $MYSQL_INIT_FILE
+    mariadb -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT <$MYSQL_INIT_FILE
 
     if [ $? -eq 0 ]; then
         log INFO "SQL File execution successful"
@@ -104,7 +104,7 @@ function post_paymenthub_deployment_script() {
     run_failed_sql_statements
     # Run migrations in Kong Pod
     # Now using kong-init-migrations pod to run migrations
-    # run_kong_migrations 
+    # run_kong_migrations
 
 }
 
@@ -146,13 +146,7 @@ function configure_mojaloop() {
     fi
 }
 
-function deploy_mojaloop() {
-    log DEBUG "Deploying Mojaloop application manifests"
-    create_namespace "$MOJALOOP_NAMESPACE"
-    clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
-    rename_off_files_to_yaml "${MOJALOOP_LAYER_DIRS[0]}"
-    configure_mojaloop
-
+function deploy_mojaloop_layers() {
     for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
         folder="${MOJALOOP_LAYER_DIRS[index]}"
         log INFO "Deploying files in $folder"
@@ -163,6 +157,16 @@ function deploy_mojaloop() {
             log INFO "Proceeding ..."
         fi
     done
+}
+
+function deploy_mojaloop() {
+    log DEBUG "Deploying Mojaloop application manifests"
+    create_namespace "$MOJALOOP_NAMESPACE"
+    clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
+    rename_off_files_to_yaml "${MOJALOOP_LAYER_DIRS[0]}"
+    configure_mojaloop
+
+    deploy_mojaloop_layers
 
     log OK "============================"
     log OK "Mojaloop deployed."
@@ -264,30 +268,60 @@ function deploy_paymenthub() {
 
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
+    log DEBUG "Running paymenthub post install (might take a while)..."
+    post_paymenthub_deployment_script
+
     log OK "============================"
     log OK "Paymenthub deployed."
     log OK "============================"
 }
 
-function update_phee() {
+function update_infrastructure() {
+    log DEBUG "Updating infrastructure"
+    deploy_helm_chart_from_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+}
+
+function update_paymenthub() {
+    log DEBUG "Updating paymenthub"
     configure_paymenthub_env_vars
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 }
 
-function uninstall_deployments {
-    log WARNING "Uninstalling deployments..."
+function update_mojaloop() {
+    log DEBUG "Updating mojaloop"
+    configure_mojaloop
+    deploy_mojaloop_layers
+}
 
-    log INFO "Uninstalling infrastructure..."
+function update_apps {
+    log INFO "Updating all deployments"
+    update_infrastructure
+    update_paymenthub
+    update_mojaloop
+}
+
+function uninstall_infrastructure() {
+    log WARNING "Uninstalling infrastructure..."
     su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME -n $INFRA_NAMESPACE "
     su - $k8s_user -c "kubectl delete namespace $INFRA_NAMESPACE"
+}
 
-    log INFO "Uninstalling paymenthub ..."
+function uninstall_paymenthub() {
+    log WARNING "Uninstalling paymenthub ..."
     su - $k8s_user -c "helm uninstall $PH_RELEASE_NAME -n $PH_NAMESPACE"
     su - $k8s_user -c "kubectl delete namespace $PH_NAMESPACE"
+}
 
-    log INFO "Uninstalling mojaloop..."
+function uninstall_mojaloop() {
+    log WARNING "Uninstalling mojaloop..."
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
+}
 
+function uninstall_apps {
+    log WARNING "Uninstalling all deployments..."
+    uninstall_infrastructure
+    uninstall_paymenthub
+    uninstall_mojaloop
     log WARNING "Deployments uninstalled."
 }
 
@@ -303,13 +337,8 @@ function print_end_message {
 }
 
 function deploy_apps {
-    log DEBUG "Deploying applications ..."
     deploy_infrastructure
     deploy_paymenthub
     deploy_mojaloop
-
-    log DEBUG "Running paymenthub post install (might take a while)..."
-    post_paymenthub_deployment_script
-
     print_end_message
 }

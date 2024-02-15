@@ -16,29 +16,31 @@ function showUsage {
         echo "Incorrect number of arguments passed to function $0"
         exit 1
     else
-        echo "USAGE: $0 -m [mode]
+        echo "USAGE: $0 -u [user]
 Options:
-  -m mode ............... install|uninstall (-m is required)
-  -u user................ user attached to the installation
-  -h|H .................. display this message
+  -h|H                              :Display this help message
+  -u user                           :installation user (-u user is required)
+  install [paymenthub|mojaloop]     :Install paymenthub|mojaloop. Install full stack if none specified.
+  update [paymenthub|mojaloop]      :Update paymenthub|mojaloop. Update all if none specified.
+  uninstall [paymenthub|mojaloop]   :Uninstall paymenthub|mojaloop. Uninstall everything if none specified.
 
-Example 1 : sudo $0  -m install -u $USER # Install
-Example 2 : sudo $0  -m uninstall -u $USER # Uninstall everything
-Example 3 : sudo $0  -m update -u $USER # Update current installation
-    **** Argument -m [mode] is required****
+EXAMPLES: 
+    sudo $0 -u $USER install                         # Install full stack.
+    sudo $0 -u $USER install paymenthub              # Install paymenthub stack
+    sudo $0 -u $USER install mojaloop                # Install mojaloop stack
+    sudo $0 -u $USER update                          # Update all
+    sudo $0 -u $USER update [paymenthub|mojaloop]    # Update paymenthub|mojaloop
+    sudo $0 -u $USER uninstall                       # Uninstall everything
+    sudo $0 -u $USER uninstall [paymenthub|mojaloop] # uninstall paymenthub|mojaloop
+                **** Argument -u [user] is required ****
 "
     fi
 
 }
 
 function getoptions {
-    local mode_opt
-
-    while getopts "m:u:hH" OPTION; do
+    while getopts "u:hH" OPTION; do
         case "${OPTION}" in
-        m)
-            mode_opt="${OPTARG}"
-            ;;
         u)
             k8s_user="${OPTARG}"
             ;;
@@ -54,18 +56,17 @@ function getoptions {
         esac
     done
 
-    if [ -z "$mode_opt" ]; then
+    if [ -z "$k8s_user" ]; then
         showUsage
+        echo "USER MISSING"
         exit 1
     fi
-
-    mode="$mode_opt"
 }
 
 # this function is also called when Ctrl-C is sent
 function uninstall() {
-    log WARNING "Performing graceful uninstall..."
-    uninstall_deployments
+    log WARNING "Performing graceful uninstall"
+    uninstall_apps
     uninstall_setup
 
     # exit shell script with error code 2
@@ -91,18 +92,45 @@ function main {
 
     welcome
     getoptions "$@"
+    mode="${@:$OPTIND:1}"
+    application="${@:$OPTIND+1:1}"
+
     if [ $mode == "install" ]; then
         echo -e "${YELLOW}"
         echo -e "===================================================================="
         echo -e "This deployment is meant for demo purposes and not for production"
         echo -e "===================================================================="
         echo -e "${RESET}"
+
         setup_env "$k8s_distro"
-        deploy_apps
-    elif [ $mode == "uninstall" ]; then
-        uninstall
+
+        if [[ $application == "paymenthub" ]]; then
+            deploy_infrastructure
+            deploy_paymenthub
+        elif [[ $application == "mojaloop" ]]; then
+            deploy_infrastructure
+            deploy_mojaloop
+        else
+            deploy_apps
+        fi
     elif [ $mode == "update" ]; then
-        update_phee
+        if [[ $application == "paymenthub" ]]; then
+            update_paymenthub
+        elif [[ $application == "mojaloop" ]]; then
+            update_mojaloop
+        elif [[ $application == "infra" ]]; then
+            update_infrastructure
+        else
+            update_apps
+        fi
+    elif [ $mode == "uninstall" ]; then
+        if [[ $application == "paymenthub" ]]; then
+            uninstall_paymenthub
+        elif [[ $application == "mojaloop" ]]; then
+            uninstall_mojaloop
+        else
+            uninstall
+        fi
     else
         showUsage
     fi
