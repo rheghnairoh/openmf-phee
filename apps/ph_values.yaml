@@ -38,15 +38,15 @@ ph-ee-g2psandbox:
           xpack.security.http.ssl.keystore.path: /usr/share/elasticsearch/config/certs/elastic-certificates.p12
           xpack.ml.enabled: false
       # Shrink default JVM heap.
-      esJavaOpts: "-Xmx8G -Xms2G"
+      esJavaOpts: "-Xmx2G -Xms2G"
       # Allocate smaller chunks of memory per pod.
       resources:
         requests:
           cpu: "1"
           memory: "2G"
         limits:
-          cpu: "4"
-          memory: "8G"
+          cpu: "2"
+          memory: "4G"
       volumeClaimTemplate:
         # accessModes: [ "ReadWriteOnce" ]
         storageClassName: "microk8s-hostpath"
