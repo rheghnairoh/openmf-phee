@@ -183,10 +183,7 @@ ph-ee-g2psandbox:
         transaction.state.log.replication.factor=3
       zookeeper:
         enabled: true
-        replicaCount: 3
-        persistence:
-          enabled: true
-          size: 8Gi
+        replicaCount: 1
       kraft:
         enabled: false
       extraEnvVars:
