@@ -181,7 +181,17 @@ ph-ee-g2psandbox:
         default.replication.factor=3
         offsets.topic.replication.factor=3
         transaction.state.log.replication.factor=3
-      env:
+      zookeeper:
+        enabled: true
+        replicaCount: 3
+        persistence:
+          enabled: true
+          size: 8Gi
+      kraft:
+        enabled: false
+      extraEnvVars:
+        - name: KAFKA_ENABLE_KRAFT
+          value: "false"
         - name: "KAFKA_HEAP_OPTS"
           value: "-Xms2G -Xmx4G"
       provisioning:
