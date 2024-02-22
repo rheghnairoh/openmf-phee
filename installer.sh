@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# installer.sh : Installer Utility
+# Author:  Honest Chirozva 
+# Date :   February 2024 
 
 source ./scripts/config_env.sh
 source ./scripts/deployer.sh

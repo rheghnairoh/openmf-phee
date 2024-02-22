@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# config_env.sh : Configure environment for installation
+# Author:  Honest Chirozva
+# Date :   February 2024
 
 source ./scripts/logger.sh
 
@@ -46,6 +49,91 @@ function check_os_ok {
         log WARNING "Untested OS distro detected. Installation requires Ubuntu OS"
         log ERROR "Proceeding... Unexpected behaviour might occur !!!"
     fi
+}
+
+function do_k3s_install {
+    log INFO "===================================================================="
+    log INFO " Installing Kubernetes k3s engine and tools (helm/ingress etc)"
+    log INFO "===================================================================="
+    # ensure k8s_user has clean .kube/config
+    rm -rf $k8s_user_home/.kube >>/dev/null 2>&1
+    log INFO "Installing k3s "
+
+    K8S_VERSION="1.28"
+    HELM_VERSION="3.12.0"
+    
+    curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" \
+        INSTALL_K3S_CHANNEL="v$K8S_VERSION" \
+        INSTALL_K3S_EXEC=" --disable traefik " sh >/dev/null 2>&1
+
+    # check k3s installed ok
+    status=$(k3s check-config 2>/dev/null | grep "^STATUS" | awk '{print $2}')
+    if [[ "$status" -eq "pass" ]]; then
+        log INFO "  [ok] check-config reporting status of pass"
+    else
+        log ERROR "** Error : k3s check-config not reporting status of pass   **"
+        log ERROR "   run k3s check-config manually as user [$k8s_user] for more information   **"
+        exit 1
+    fi
+
+    # configure user environment to communicate with k3s kubernetes
+    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    cp /etc/rancher/k3s/k3s.yaml $k8s_user_home/k3s.yaml
+    chown $k8s_user $k8s_user_home/k3s.yaml
+    chmod 600 $k8s_user_home/k3s.yaml
+
+    perl -p -i.bak -e 's/^.*KUBECONFIG.*$//g' $k8s_user_home/.bashrc
+    echo "export KUBECONFIG=\$HOME/k3s.yaml" >>$k8s_user_home/.bashrc
+    perl -p -i.bak -e 's/^.*source .bashrc.*$//g' $k8s_user_home/.bash_profile
+    perl -p -i.bak2 -e 's/^.*export KUBECONFIG.*$//g' $k8s_user_home/.bash_profile
+    echo "source .bashrc" >>$k8s_user_home/.bash_profile
+    echo "export KUBECONFIG=\$HOME/k3s.yaml" >>$k8s_user_home/.bash_profile
+
+    # install helm
+    log INFO "Installing helm "
+    helm_arch_str=""
+    if [[ "$k8s_arch" == "x86_64" ]]; then
+        helm_arch_str="amd64"
+    elif [[ "$k8s_arch" == "aarch64" ]] || [[ "$k8s_arch" == "arm64" ]]; then
+        helm_arch_str="arm64"
+    else
+        log ERROR "** Error:  architecture not recognised as x86_64 or arm64  ** \n"
+        exit 1
+    fi
+    rm -rf /tmp/linux-$helm_arch_str /tmp/helm.tar
+    curl -L -s -o /tmp/helm.tar.gz https://get.helm.sh/helm-v$HELM_VERSION-linux-$helm_arch_str.tar.gz
+    gzip -d /tmp/helm.tar.gz
+    tar xf /tmp/helm.tar -C /tmp
+    mv /tmp/linux-$helm_arch_str/helm /usr/local/bin
+    rm -rf /tmp/linux-$helm_arch_str
+    /usr/local/bin/helm version >/dev/null 2>&1
+    if [[ $? -eq 0 ]]; then
+        log INFO "  helm ok."
+    else
+        log ERROR "** Error : helm install seems to have failed **"
+        exit 1
+    fi
+
+    #install nginx
+    log INFO "Installing nginx ingress chart and wait for it to be ready"
+    su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx \
+                      --repo https://kubernetes.github.io/ingress-nginx \
+                      -f $MOJALOOPREPO_DIR/packages/installer/manifests/infra/nginx-values.yaml" >/dev/null 2>&1
+    # TODO : check to ensure that the ingress is indeed running
+    nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
+
+    if [ -z "$nginx_pod_name" ]; then
+        log ERROR "** Error : helm install of nginx seems to have failed , no nginx pod found **"
+        exit 1
+    fi
+    # Check if the Nginx pod is running
+    if kubectl get pods $nginx_pod_name | grep -q "Running"; then
+        log INFO "Nginx running..."
+    else
+        log ERROR "** Error : helm install of nginx seems to have failed , nginx pod is not running  **"
+        exit 1
+    fi
+
 }
 
 function configure_microk8s {
@@ -164,7 +252,9 @@ function install_prerequisites {
 
 function add_hosts {
     log INFO "Updating hosts file"
-    ENDPOINTSLIST=(127.0.0.1 ml-api-adapter.local central-ledger.local account-lookup-service.local account-lookup-service-admin.local quoting-service.local central-settlement-service.local transaction-request-service.local central-settlement.local bulk-api-adapter.local moja-simulator.local sim-payerfsp.local sim-payeefsp.local sim-testfsp1.local sim-testfsp2.local sim-testfsp3.local sim-testfsp4.local mojaloop-simulators.local finance-portal.local operator-settlement.local settlement-management.local testing-toolkit.local testing-toolkit-specapi.locall)
+    ENDPOINTSLIST=(127.0.0.1
+        mongohost.local mongoexpress.local vnextadmin.local elasticsearch.local kafkaconsole.local fspiop.local
+        bluebank.local greenbank.local)
 
     export ENDPOINTS=$(echo ${ENDPOINTSLIST[*]})
 
@@ -176,6 +266,7 @@ function add_hosts {
     # TODO check the ping actually works > suggest cloud network rules if it doesn't
     #      also for cloud VMs might need to use something other than curl e.g. netcat ?
     # ping  -c 2 account-lookup-service-admin.local
+    ping -c 2 vnextadmin
 }
 
 function install_k8s_tools {
@@ -183,7 +274,6 @@ function install_k8s_tools {
     if ! command -v kubens &>/dev/null; then
         log DEBUG "Installing kubernetes tools: kubens and kustomize\n" \
             "   - https://github.com/ahmetb/kubectx"
-        
         sudo git clone https://github.com/ahmetb/kubectx /opt/kubectx >>/dev/null 2>&1
         sudo ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
         sudo ln -s /opt/kubectx/kubens /usr/local/bin/kubens
@@ -196,6 +286,8 @@ function install_k8s_tools {
 function add_helm_repos {
     # see readme at https://github.com/mojaloop/helm for required helm libs
     log INFO "Add the helm repositories"
+    su - $k8s_user -c "helm repo add kiwigrid https://kiwigrid.github.io" >/dev/null 2>&1
+    su - $k8s_user -c "helm repo add kokuwa https://kokuwaio.github.io/helm-charts" >/dev/null 2>&1 #fluentd
     su - $k8s_user -c "helm repo add elastic https://helm.elastic.co" >/dev/null 2>&1
     su - $k8s_user -c "helm repo add codecentric https://codecentric.github.io/helm-charts" >/dev/null 2>&1 # keycloak for TTK
     su - $k8s_user -c "helm repo add bitnami https://charts.bitnami.com/bitnami" >/dev/null 2>&1
@@ -293,8 +385,14 @@ function setup_env {
     k8s_user_home=""
     k8s_arch=$(uname -p) # what arch
     # Set the minimum amount of RAM in GB
-    MIN_RAM=16
-    MIN_FREE_SPACE=30
+    MIN_RAM=30
+    MIN_FREE_SPACE=60
+
+    DEFAULT_HELM_TIMEOUT_SECS="1200s" # default timeout for deplying helm chart
+    TIMEOUT_SECS=$DEFAULT_HELM_TIMEOUT_SECS
+
+    EXTERNAL_ENDPOINTS_LIST=("mongoexpress.local" "vnextadmin.local" "elasticsearch.local" "kibana.local"
+        "kafkaconsole.local" "fspiop.local" "bluebank.local" "greenbank.local")
 
     # ensure we are running as root
     if [ "$EUID" -ne 0 ]; then

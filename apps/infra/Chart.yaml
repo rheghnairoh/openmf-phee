@@ -1,36 +1,47 @@
 apiVersion: v2
 description: Helm chart for infrastructure services
 name: infra
-version: 15.0.0
-appVersion: "0.0.1"
-home: https://summerofcode.withgoogle.com/programs/2023/projects/oQk6Gmup
-icon: https://summerofcode.withgoogle.com/assets/media/logo.svg
+version: 0.1.0
+appVersion: "kafka: 3.6.0; console: 2.3.5; mongodb: 7.0.2; mongo-express:1.0.0; redis: 7.2.2; elasticsearch:8.10.4; "
 sources:
 - https://github.com/rheghnairoh/openmf-phee
 maintainers:
-- name: Honest Chirozva Okello
+- name: Honest Chirozva
   email: hchirozvah@outlook.com
 dependencies:
+## kafka 
+- name: kafka
+  alias: kafka
+  condition: kafka.enabled
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 26.2.0
 ## redpanda kafka console 
 - name: console
   alias: redpanda-console
   condition: console.enabled
   repository: https://charts.redpanda.com
-  version: 0.6.6
+  version: 0.7.6
 ## MongoDB
 - name: mongodb
   alias: mongodb
   condition: mongodb.enabled
-  repository: https://charts.bitnami.com/bitnami
-  version: 13.3.1
+  repository: https://groundhog2k.github.io/helm-charts/
+  version: 0.6.0
 ## Mongo-express
 - name: mongo-express
   alias: mongo-express
   condition: mongo-express.enabled
   repository: https://cowboysysop.github.io/charts/
-  version: 3.1.1
-## kafka 
-- name: kafka
-  condition: kafka.enabled
+  version: 5.2.0
+## redis 
+- name: redis
+  alias: redis 
+  condition: redis.enabled
   repository: https://charts.bitnami.com/bitnami
-  version: 19.0.2
+  version: 18.1.6
+## Elastic Search Kibana 
+- name: elasticsearch
+  alias: elasticsearch
+  condition: elasticsearch.enabled
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.13.5

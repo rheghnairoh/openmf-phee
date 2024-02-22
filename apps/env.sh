@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# env.sh : Environment Variables
+# Author:  Honest Chirozva
+# Date :   February 2024
 
 ########################################################################
 # GLOBAL VARS
@@ -8,11 +11,19 @@ APPS_DIR="$BASE_DIR/apps"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
-MOJALOOPBRANCH="alpha-1.1"
-MOJALOOPREPO_DIR="mojaloop"
+MOJALOOPBRANCH="main"
+MOJALOOPREPO_DIR="$APPS_DIR/mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
-MOJALOOP_LAYER_DIRS=("$APPS_DIR/mojaloop/packages/deployment/k8s/crosscut" "$APPS_DIR/mojaloop/packages/deployment/k8s/apps" "$APPS_DIR/mojaloop/packages/deployment/k8s/ttk" )
+MOJALOOP_MANIFESTS_DIR=$MOJALOOPREPO_DIR/packages/installer/manifests
+MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOPREPO_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
+MOJALOOP_TTK_FILES="$MOJALOOPREPO_DIR/packages/deployment/docker-compose-apps/ttk_files"
+MOJALOOP_LAYER_DIRS=(
+    "$MOJALOOP_MANIFESTS_DIR/crosscut"
+    "$MOJALOOP_MANIFESTS_DIR/apps"
+    "$MOJALOOP_MANIFESTS_DIR/reporting"
+    "$MOJALOOP_MANIFESTS_DIR/ttk"
+)
 MOJALOOP_VALUES_FILE="$APPS_DIR/config/mojaloop_values.json"
 # paymenthub
 PHBRANCH="master"

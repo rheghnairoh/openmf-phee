@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# helper.sh : Helper Utilities
+# Author:  Honest Chirozva 
+# Date :   February 2024 
+
 
 source ./apps/env.sh
 source ./scripts/logger.sh
@@ -188,4 +192,13 @@ function clone_repo() {
 
     # Change back to the previous directory
     cd - || return 1
+}
+
+function copy_dir_to_tmp {
+    from_dir="$1"
+    to_dir="$2"
+  log INFO "Copying directory $from_dir to /tmp/openmf-phee/$to_dir"
+  rm -rf /tmp/openmf-phee/$to_dir
+  cp -r $from_dir /tmp/openmf-phee
+  log INFO "Copy directory complete"
 }
