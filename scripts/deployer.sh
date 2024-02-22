@@ -8,8 +8,7 @@ source ./scripts/logger.sh
 source ./scripts/helper.sh
 
 function infra_restore_mongo_demo_data {
-    local mongo_data_dir=$1
-    local ttk_files_dir=$2
+    local mongo_data_dir=$MOJALOOP_MONGO_IMPORT_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
 
     #   error_message=" restoring the mongo database data failed "
@@ -48,12 +47,12 @@ function install_mojaloop_layer() {
         log ERROR "Usage: install_mojaloop_layer <directory> <namespace>"
         return 1
     fi
-    log INFO "Installing mojaloop layer $directory"
 
     local directory="$1"
     local namespace="$2"
     local previous_dir="$PWD" # Save the current working directory
 
+    log INFO "Installing mojaloop layer $directory"
     # Check if the directory exists.
     if [ ! -d "$directory" ]; then
         log ERROR "Directory '$directory' not found."
@@ -65,10 +64,10 @@ function install_mojaloop_layer() {
     non_data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-")
     data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -i "\-data\-")
     for file in $data_resource_files; do
-        kubectl apply -f $file >/dev/null 2>&1
+        kubectl apply -f $file -n "$namespace" >/dev/null 2>&1
     done
     for file in $non_data_resource_files; do
-        kubectl apply -f $file >/dev/null 2>&1
+        kubectl apply -f $file -n "$namespace" >/dev/null 2>&1
     done
 
     if [ $? -eq 0 ]; then
