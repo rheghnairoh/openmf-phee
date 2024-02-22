@@ -10,6 +10,13 @@ source ./scripts/helper.sh
 function infra_restore_mongo_demo_data {
     local mongo_data_dir=$MOJALOOP_MONGO_IMPORT_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
+    
+    pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    while [[ "$pod_status" != "Running" ]]; do
+        log INFO "MongoDB seems not running...waiting for pods to come up."
+        sleep 5
+        pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    done
 
     #   error_message=" restoring the mongo database data failed "
     #   trap 'handle_warning $LINENO "$error_message"' ERR
@@ -36,7 +43,6 @@ function deploy_infrastructure() {
     log DEBUG "Deploying infrastructure..."
     create_namespace $INFRA_NAMESPACE
     deploy_helm_chart_from_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
-    infra_restore_mongo_demo_data
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -105,15 +111,21 @@ function delete_mojaloop_layer() {
     cd "$previous_dir" || return 1
 }
 
-function configure_mojaloop_ttk {
+function mojaloop_postinstall_setup_ttk {
     local ttk_files_dir=$MOJALOOP_TTK_FILES
     log DEBUG "Configuring mojaloop testing toolkit"
     #copy in the TTK environment data if bluebank pod exists and is running
 
     bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    while [[ "$bb_pod_status" != "Running" ]]; do
+        log INFO "TTK seems not running...waiting for pods to come up."
+        sleep 5
+        bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    done
     if [[ "$bb_pod_status" == "Running" ]]; then
-        log INFO "Testing toolkit data and environment config..."
+        log DEBUG "Configure testing toolkit (ttk) data and environment..."
         ####   bluebank  ###
+        log INFO "=====bluebank====="
         ttk_pod_env_dest="/opt/app/examples/environments"
         ttk_pod_spec_dest="/opt/app/spec_files"
         kubectl cp $ttk_files_dir/environment/hub_local_environment.json bluebank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
@@ -122,14 +134,13 @@ function configure_mojaloop_ttk {
         kubectl cp $ttk_files_dir/spec_files/default.json bluebank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
 
         ####  greenbank  ###
+        log INFO "=====greenbank====="
         kubectl cp $ttk_files_dir/environment/hub_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
         kubectl cp $ttk_files_dir/environment/dfsp_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/dfsp_local_environment.json
         kubectl cp $ttk_files_dir/spec_files/user_config_greenbank.json greenbank-backend-0:$ttk_pod_spec_dest/user_config.json
         kubectl cp $ttk_files_dir/spec_files/default.json greenbank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
 
-        log INFO "Configure TTK complete."
-    else
-        log INFO "TTK seems not running...skipping data and environment config"
+        log OK "Configure TTK complete."
     fi
 }
 
@@ -234,7 +245,7 @@ function post_paymenthub_deployment_script() {
     run_failed_sql_statements
     # Run migrations in Kong Pod
     # Now using kong-init-migrations pod to run migrations
-    # run_kong_migrations
+    run_kong_migrations
 
 }
 
@@ -270,7 +281,7 @@ function configure_mojaloop_manifests_values() {
     done
 
     if [ $? -eq 0 ]; then
-        log INFO "Mojaloop Manifests edited successfully"
+        log INFO "Mojaloop manifests edited successfully"
     else
         log ERROR "Could not edit Mojaloop Manifests."
     fi
@@ -296,13 +307,17 @@ function deploy_mojaloop() {
     # rename_off_files_to_yaml "${MOJALOOP_LAYER_DIRS[0]}"
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
-    configure_mojaloop_ttk
-    check_mojaloop_urls
-    check_mojaloop_health
 
     log OK "============================"
     log OK "Mojaloop deployed."
     log OK "============================"
+
+    log DEBUG "Run postinstall for mojaloop when all pods are running. \n" \
+        "     sudo $0 -u $USER postinstall mojaloop"
+
+    # mojaloop_postinstall_setup_ttk
+    check_mojaloop_urls
+    check_mojaloop_health
 }
 
 function configure_paymenthub_env_vars {
@@ -401,12 +416,12 @@ function deploy_paymenthub() {
 
     deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
-    log DEBUG "Running paymenthub post install (might take a while)..."
-    post_paymenthub_deployment_script
-
     log OK "============================"
     log OK "Paymenthub deployed."
     log OK "============================"
+
+    log DEBUG "Run postinstall for paymenthub when all pods are running. \n" \
+        "     sudo $0 -u $USER postinstall mojaloop"
 }
 
 function update_infrastructure() {
