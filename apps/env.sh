@@ -12,12 +12,13 @@ INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
 MOJALOOPBRANCH="main"
-MOJALOOPREPO_DIR="$APPS_DIR/mojaloop"
+MOJALOOPREPO_DIR="mojaloop"
+MOJALOOP_DIR="$APPS_DIR/mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
-MOJALOOP_MANIFESTS_DIR=$MOJALOOPREPO_DIR/packages/installer/manifests
-MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOPREPO_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
-MOJALOOP_TTK_FILES="$MOJALOOPREPO_DIR/packages/deployment/docker-compose-apps/ttk_files"
+MOJALOOP_MANIFESTS_DIR=$MOJALOOP_DIR/packages/installer/manifests
+MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
+MOJALOOP_TTK_FILES="$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files"
 MOJALOOP_LAYER_DIRS=(
     "$MOJALOOP_MANIFESTS_DIR/crosscut"
     "$MOJALOOP_MANIFESTS_DIR/apps"
