@@ -357,6 +357,7 @@ function configure_paymenthub() {
     log DEBUG "Creating prometheus operator resources ${LATEST}"
     kubens $PH_NAMESPACE
     su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
+    kubens -
 
     cd $ph_chart_dir || exit 1
 
