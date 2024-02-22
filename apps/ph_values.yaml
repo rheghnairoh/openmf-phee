@@ -182,10 +182,10 @@ ph-ee-g2psandbox:
         offsets.topic.replication.factor=3
         transaction.state.log.replication.factor=3
       zookeeper:
-        enabled: true
+        enabled: false
         replicaCount: 1
       kraft:
-        enabled: false
+        enabled: true
       extraEnvVars:
         - name: KAFKA_ENABLE_KRAFT
           value: "false"
@@ -195,8 +195,8 @@ ph-ee-g2psandbox:
         enabled: true
         topics:
           - name: zeebe-export
-            # partitions: 1
-            # replicationFactor: 1
+            partitions: 1
+            replicationFactor: 1
           - name: KAFKA_AUDITS_TOPIC
             value: audits
           - name: KAFKA_LOGS_TOPIC
