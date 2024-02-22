@@ -10,7 +10,7 @@ source ./scripts/helper.sh
 function infra_restore_mongo_demo_data {
     local mongo_data_dir=$MOJALOOP_MONGO_IMPORT_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
-    
+
     pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
     while [[ "$pod_status" != "Running" ]]; do
         log INFO "MongoDB seems not running...waiting for pods to come up."
@@ -192,13 +192,13 @@ function run_failed_sql_statements() {
         return 1
     fi
 
-    log INFO "Restarting Deployment for Operations App"
+    log INFO "Restarting deployment for operations-app"
     kubectl rollout restart deploy/$operationsDeplName -n $PH_NAMESPACE
 
     if [ $? -eq 0 ]; then
-        log INFO "Deployment Restart successful"
+        log INFO "Deployment restart operations-app successful"
     else
-        log ERROR "Deployment Restart failed"
+        log ERROR "Deployment restart failed for operations-app"
         return 1
     fi
 }
@@ -474,6 +474,10 @@ function uninstall_paymenthub() {
 
 function uninstall_mojaloop() {
     log WARNING "Uninstalling mojaloop..."
+    for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
+        folder="${MOJALOOP_LAYER_DIRS[index]}"
+        delete_mojaloop_layer "$folder" "$MOJALOOP_NAMESPACE"
+    done
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 }
 
