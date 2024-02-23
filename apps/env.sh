@@ -20,8 +20,8 @@ MOJALOOP_MANIFESTS_DIR=$MOJALOOP_DIR/packages/installer/manifests
 MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
 MOJALOOP_TTK_FILES="$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files"
 MOJALOOP_LAYER_DIRS=(
-    "$MOJALOOP_MANIFESTS_DIR/crosscut"
     "$MOJALOOP_MANIFESTS_DIR/apps"
+    "$MOJALOOP_MANIFESTS_DIR/crosscut"
     "$MOJALOOP_MANIFESTS_DIR/reporting"
     "$MOJALOOP_MANIFESTS_DIR/ttk"
 )

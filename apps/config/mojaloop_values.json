@@ -1,162 +1,22 @@
 [
   {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/fspiop-api-svc-deployment.yaml",
+    "property_name": "MONGO_URL",
+    "old_value": "root:mongoDbPas42@mongodb:27017",
+    "new_value": "root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017"
+  },
+  {
+    "property_name": "KAFKA_URL",
     "old_value": "value: kafka:9092",
     "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
   },
   {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/fspiop-api-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
+    "property_name": "ELASTICSEARCH_URL",
+    "old_value": "http://infra-elasticsearch:9200",
+    "new_value": "http://ph-ee-elasticsearch.paymenthub.svc.cluster.local:9200"
   },
   {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/account-lookup-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/account-lookup-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/quoting-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/quoting-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-api-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/platform-configuration-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/authorization-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/transfers-event-handler-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/authentication-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/transfers-command-handler-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/transfers-command-handler-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-command-handler-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-command-handler-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/transfers-api-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/transfers-api-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-coa-grpc-svc-deployment.yaml",
+    "property_name": "REDIS_HOST",
     "old_value": "value: redis-master",
     "new_value": "value: g2p-sandbox-redis-master.paymenthub.svc.cluster.local"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/settlements-event-handler-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/participants-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/participants-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
-    "old_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb:27017\\/",
-    "new_value": "value: mongodb:\\/\\/root:mongoDbPas42@mongodb.infra.svc.cluster.local:27017\\/"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/apps/accounts-and-balances-builtin-ledger-grpc-svc-deployment.yaml",
-    "old_value": "value: redis-master",
-    "new_value": "value: g2p-sandbox-redis-master.paymenthub.svc.cluster.local"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/auditing-svc-deployment.yaml",
-    "old_value": "value: http:\\/\\/infra-elasticsearch:9200",
-    "new_value": "value: http:\\/\\/ph-ee-elasticsearch.paymenthub.svc.cluster.local:9200"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/auditing-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/logging-svc-deployment.yaml",
-    "old_value": "value: http:\\/\\/infra-elasticsearch:9200",
-    "new_value": "value: http:\\/\\/ph-ee-elasticsearch.paymenthub.svc.cluster.local:9200"
-  },
-  {
-    "file_name": "apps/mojaloop/packages/installer/manifests/crosscut/logging-svc-deployment.yaml",
-    "old_value": "value: kafka:9092",
-    "new_value": "value: kafka.paymenthub.svc.cluster.local:9092"
   }
 ]

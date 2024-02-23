@@ -252,6 +252,9 @@ function post_paymenthub_deployment_script() {
 function configure_mojaloop_manifests_values() {
     log DEBUG "Configuring Mojaloop Manifests"
     local json_file=$MOJALOOP_VALUES_FILE
+    local property_name
+    local old_value
+    local new_value
 
     # Check if jq is installed, if not, exit with an error message
     if ! command -v jq &>/dev/null; then
@@ -265,19 +268,19 @@ function configure_mojaloop_manifests_values() {
         return 1
     fi
 
-    # Loop over JSON objects in the file and call the process_json_object function
     jq -c '.[]' "$json_file" | while read -r json_object; do
-        local file_name
-        local old_value
-        local new_value
-
         # Extract attributes from the JSON object
-        file_name=$(echo "$json_object" | jq -r '.file_name')
+        property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
         new_value=$(echo "$json_object" | jq -r ".new_value")
 
-        # Call the  function with the extracted attributes
-        replace_values_in_file "$file_name" "$old_value" "$new_value"
+        log DEBUG "Configure $property_name in mojaloop manifests"
+        for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
+            folder="${MOJALOOP_LAYER_DIRS[index]}"
+            for file_name in $folder; do
+                replace_values_in_file "$file_name" "$old_value" "$new_value"
+            done
+        done
     done
 
     if [ $? -eq 0 ]; then
@@ -321,46 +324,31 @@ function deploy_mojaloop() {
 }
 
 function configure_paymenthub_env_vars {
+    local property_name
+    local old_value
+    local new_value
+    local json_file
+    local values_file
+
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    # application-tenantsConnection.properties
-    local file_name="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
-    local old_value="operationsmysql"
-    local new_value="$MYSQL_HOST"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-    # db port
-    old_value="3306"
-    new_value="$MYSQL_PORT"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-    # db user
-    old_value="mifos"
-    new_value="$MYSQL_USER"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-    # db password
-    old_value="password"
-    new_value="$MYSQL_PASSWORD"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    values_file="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
+    json_file="$APPS_DIR/config/tenant_connection_values.json"
+    jq -c '.[]' "$json_file" | while read -r json_object; do
+        property_name=$(echo "$json_object" | jq -r '.property_name')
+        old_value=$(echo "$json_object" | jq -r '.old_value')
+        new_value=$(echo "$json_object" | jq -r ".new_value")
+        replace_values_in_file "$values_file" "$old_value" "$new_value"
+    done
 
-    log DEBUG "Updating tenant datasource url in ph_values.yaml"
-    file_name="apps/ph_values.yaml"
-    old_value="operationsmysql.sandbox.fynarfin.io"
-    new_value="$MYSQL_HOST"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-
-    log DEBUG "Updating hostname (DNS) in ph_values.yaml"
-    file_name="apps/ph_values.yaml"
-    old_value="sandbox.fynarfin.io"
-    new_value="$PH_HOSTNAME"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-
-    log DEBUG "Updating message gateway keys in ph_values.yaml"
-    file_name="apps/ph_values.yaml"
-    old_value="eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl"
-    new_value="$PH_MESSAGE_GATEWAY_API_KEY"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
-    # project_id
-    old_value="PJ5ff552ce01d2978c"
-    new_value="$PH_MESSAGE_GATEWAY_PROJECT_ID"
-    replace_values_in_file "$file_name" "$old_value" "$new_value"
+    log DEBUG "Updating env variables in ph_values.yaml"
+    values_file="apps/ph_values.yaml"
+    json_file="$APPS_DIR/config/paymenthub_values.json"
+    jq -c '.[]' "$json_file" | while read -r json_object; do
+        property_name=$(echo "$json_object" | jq -r '.property_name')
+        old_value=$(echo "$json_object" | jq -r '.old_value')
+        new_value=$(echo "$json_object" | jq -r ".new_value")
+        replace_values_in_file "$values_file" "$old_value" "$new_value"
+    done
 }
 
 function configure_paymenthub() {

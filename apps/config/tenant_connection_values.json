@@ -1,0 +1,22 @@
+[
+  {
+    "property_name": "MYSQL_HOST",
+    "old_value": "operationsmysql",
+    "new_value": "$MYSQL_HOST"
+  },
+  {
+    "property_name": "MYSQL_PORT",
+    "old_value": "3306",
+    "new_value": "$MYSQL_PORT"
+  },
+  {
+    "property_name": "MYSQL_USER",
+    "old_value": "mifos",
+    "new_value": "$MYSQL_USER"
+  },
+  {
+    "property_name": "MYSQL_PASSWORD",
+    "old_value": "password",
+    "new_value": "$MYSQL_PASSWORD"
+  }
+]

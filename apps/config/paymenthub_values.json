@@ -1,0 +1,22 @@
+[
+  {
+    "property_name": "MYSQL_HOST",
+    "old_value": "operationsmysql.sandbox.fynarfin.io",
+    "new_value": "$MYSQL_HOST"
+  },
+  {
+    "property_name": "PH_HOSTNAME",
+    "old_value": "sandbox.fynarfin.io",
+    "new_value": "$PH_HOSTNAME"
+  },
+  {
+    "property_name": "PH_MESSAGE_GATEWAY_API_KEY",
+    "old_value": "eKiC1_JWdKy7eaTGQFHxXXjXjacr60W9Zntl",
+    "new_value": "$PH_MESSAGE_GATEWAY_API_KEY"
+  },
+  {
+    "property_name": "PH_MESSAGE_GATEWAY_PROJECT_ID",
+    "old_value": "PJ5ff552ce01d2978c",
+    "new_value": "$PH_MESSAGE_GATEWAY_PROJECT_ID"
+  }
+]
