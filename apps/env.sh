@@ -36,6 +36,8 @@ PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
 PH_HOSTNAME="counselorservice.sytes.net"
 PH_MESSAGE_GATEWAY_API_KEY=aadc326ccee4e35716352520d2ec367b
 PH_MESSAGE_GATEWAY_PROJECT_ID=AC7243e41db602c5ddde0cdb3537d7003f
+# Elastic Search
+PH_ELASTICSEARCH_PASSWORD=elasticSearchPas42
 # Define Kubernetes service and MySQL connection details
 MYSQL_USER="mifos"
 MYSQL_PASSWORD="password"

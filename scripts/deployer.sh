@@ -385,6 +385,7 @@ function configure_paymenthub() {
     # create secrets for paymenthub namespace and infra namespace
     cd es-secret || exit 1
     log DEBUG "Creating elasticsearch secrets..."
+    export ELASTICSEARCH_PASSWORD=$PH_ELASTICSEARCH_PASSWORD
     create_secret "$PH_NAMESPACE"
     # create_secret "$INFRA_NAMESPACE"
     cd ..

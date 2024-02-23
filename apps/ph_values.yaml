@@ -56,7 +56,7 @@ ph-ee-g2psandbox:
 
     kibana:
       ingress:
-        enabled: trueS
+        enabled: true
         className: "public"
         pathtype: "Prefix"
         annotations: {}
@@ -187,8 +187,6 @@ ph-ee-g2psandbox:
       # kraft:
       #   enabled: true
       extraEnvVars:
-        # - name: KAFKA_ENABLE_KRAFT
-        #   value: "false"
         - name: "KAFKA_HEAP_OPTS"
           value: "-Xms2G -Xmx4G"
       provisioning:

@@ -223,7 +223,7 @@ elasticsearch:
     replicaCount: 0
 
   ingress:
-    ingressClassName: nginx-ext
+    ingressClassName: public
     enabled: true
     hostname: elasticsearch.local
     #annotations
@@ -234,7 +234,7 @@ elasticsearch:
 
   kibana:
     ingress:
-      ingressClassName: nginx-ext
+      ingressClassName: public
       enabled: true
       hostname: kibana.local
       #annotations
