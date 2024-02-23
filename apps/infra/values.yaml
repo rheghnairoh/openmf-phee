@@ -155,10 +155,6 @@ mongodb:
 mongo-express:
   fullnameOverride: mongo-express
   enabled: true
-
-  image:
-    tag: 1.0.0
-
   ingress:
     enabled: true
     ingressClassName: public
