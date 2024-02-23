@@ -172,7 +172,6 @@ mongo-express:
 
   mongodbEnableAdmin: true
   mongodbAdminPassword: mongoDbPas42
-  mongodbAdminUsername: root
 
   livenessProbe:
     enabled: false
