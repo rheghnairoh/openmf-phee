@@ -11,8 +11,8 @@
   },
   {
     "property_name": "ELASTICSEARCH_URL",
-    "old_value": "http://infra-elasticsearch:9200",
-    "new_value": "http://ph-ee-elasticsearch.paymenthub.svc.cluster.local:9200"
+    "old_value": "value: http://infra-elasticsearch:9200",
+    "new_value": "value: http://ph-ee-elasticsearch.paymenthub.svc.cluster.local:9200"
   },
   {
     "property_name": "REDIS_HOST",
