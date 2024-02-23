@@ -58,7 +58,7 @@ function install_mojaloop_layer() {
     local namespace="$2"
     local previous_dir="$PWD" # Save the current working directory
 
-    log INFO "Installing mojaloop layer $directory"
+    log DEBUG "Installing mojaloop layer $directory"
     # Check if the directory exists.
     if [ ! -d "$directory" ]; then
         log ERROR "Directory '$directory' not found."
@@ -295,11 +295,6 @@ function deploy_mojaloop_layers() {
         folder="${MOJALOOP_LAYER_DIRS[index]}"
         log INFO "Deploying files in $folder"
         install_mojaloop_layer "$folder" "$MOJALOOP_NAMESPACE"
-        if [ "$index" -eq 0 ]; then
-            log INFO "Waiting for Mojaloop to come up..."
-            sleep 10
-            log INFO "Proceeding ..."
-        fi
     done
 }
 
