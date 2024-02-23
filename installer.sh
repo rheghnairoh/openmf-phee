@@ -29,14 +29,14 @@ Options:
   postinstall [paymenthub|mojaloop]   : Run post install tasks for [paymenthub|mojaloop].
 
 EXAMPLES: 
-    sudo $0 -u $USER install                            # Install full stack.
-    sudo $0 -u $USER install paymenthub                 # Install paymenthub stack
-    sudo $0 -u $USER install mojaloop                   # Install mojaloop stack
-    sudo $0 -u $USER update                             # Update all
-    sudo $0 -u $USER update [paymenthub|mojaloop]       # Update paymenthub|mojaloop
-    sudo $0 -u $USER uninstall                          # Uninstall everything
-    sudo $0 -u $USER uninstall [paymenthub|mojaloop]    # uninstall paymenthub|mojaloop
-    sudo $0 -u $USER postinstall [paymenthub|mojaloop]  # Perform post install tasks for paymenthub|mojaloop
+    sudo $0 -u $USER install                                # Install full stack.
+    sudo $0 -u $USER install paymenthub                     # Install paymenthub stack
+    sudo $0 -u $USER install mojaloop                       # Install mojaloop stack
+    sudo $0 -u $USER update                                 # Update all
+    sudo $0 -u $USER update [paymenthub|mojaloop|infra]     # Update paymenthub|mojaloop|infra
+    sudo $0 -u $USER uninstall                              # Uninstall everything
+    sudo $0 -u $USER uninstall [paymenthub|mojaloop]        # uninstall paymenthub|mojaloop
+    sudo $0 -u $USER postinstall [paymenthub|mojaloop]      # Perform post install tasks for paymenthub|mojaloop
                 **** Argument -u [user] is required ****
 "
     fi
