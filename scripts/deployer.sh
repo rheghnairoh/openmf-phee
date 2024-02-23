@@ -277,7 +277,7 @@ function configure_mojaloop_manifests_values() {
         log DEBUG "Configure $property_name in mojaloop manifests"
         for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
             folder="${MOJALOOP_LAYER_DIRS[index]}"
-            for file_name in "$folder/*"; do
+            for file_name in $(find $folder -type f); do
                 replace_values_in_file "$file_name" "$old_value" "$new_value"
             done
         done
