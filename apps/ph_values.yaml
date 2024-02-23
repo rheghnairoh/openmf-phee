@@ -223,12 +223,24 @@ ph-ee-g2psandbox:
             value: TransfersBcEvents
           - name: TransfersBcRequests
             value: TransfersBcRequests
+          - name: TransfersBcTimeouts
+            value: TransfersBcTimeouts
           - name: SettlementsBcEvents
             value: SettlementsBcEvents
           - name: SettlementsBcCommands
             value: SettlementsBcCommands
           - name: PlatformConfigurationBcEvents
             value: PlatformConfigurationBcEvents
+          - name: ParticipantsBcEvents
+            value: ParticipantsBcEvents
+          - name: SchedulingBcCommands
+            value: SchedulingBcCommands
+          - name: SchedulingBcEvents
+            value: SchedulingBcEvents
+          - name: SecurityBcAuthorizationEvents
+            value: SecurityBcAuthorizationEvents
+          - name: SecurityBcEvents
+            value: SecurityBcEvents
 
     channel:
       enabled: true
