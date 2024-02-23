@@ -432,7 +432,7 @@ function update_paymenthub() {
 
 function update_mojaloop() {
     log DEBUG "Updating mojaloop"
-    configure_mojaloop
+    configure_mojaloop_manifests_values
     deploy_mojaloop_layers
     log OK "==========================="
     log OK "Mojaloop updated."
