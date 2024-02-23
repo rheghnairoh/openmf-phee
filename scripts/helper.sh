@@ -33,7 +33,7 @@ function replace_values_in_file() {
         return 0
     else
         log ERROR "Error updating the value."
-        exit 1
+        return 1
     fi
 }
 

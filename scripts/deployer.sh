@@ -286,7 +286,7 @@ function configure_mojaloop_manifests_values() {
     if [ $? -eq 0 ]; then
         log INFO "Mojaloop manifests edited successfully"
     else
-        log ERROR "Could not edit Mojaloop Manifests."
+        log ERROR "Could not edit manifests."
     fi
 }
 
