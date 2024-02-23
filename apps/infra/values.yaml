@@ -139,7 +139,7 @@ mongodb:
   persistence:
     enabled: true
   image:
-    tag: 7.0
+    tag: 4.4.18
 
   fullnameOverride: mongodb
   settings:
