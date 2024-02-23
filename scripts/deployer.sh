@@ -23,7 +23,7 @@ function infra_restore_mongo_demo_data {
     log INFO "Restoring demonstration/test data and ttk configs"
     # temporary measure to inject base participants data into switch
     mongopod=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $1}')
-    mongo_root_pw=$(kubectl get secret mongodb -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
+    mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
     #kubectl cp $mongo_data_dir/mongodata.gz $mongopod:/tmp >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
     log INFO "$mongo_data_dir/mongodump-beta.gz"
     kubectl cp $mongo_data_dir/mongodump-beta.gz $mongopod:/tmp/mongodump.gz >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
