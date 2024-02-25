@@ -132,22 +132,20 @@ redpanda-console:
       #      - kafkaconsole.local
 
 ############### MongoDB  ####################
-# X64 only => https://github.com/bitnami/charts/tree/main/bitnami/mongodb
-# testing for ARM64 : https://artifacthub.io/packages/helm/groundhog2k/mongodb/0.1.0
+# https://github.com/bitnami/charts/tree/main/bitnami/mongodb
+# mongo --port 27017 -u "root" -p "mongoDbPas42" --authenticationDatabase "admin"
 mongodb:
   enabled: true
   persistence:
     enabled: true
   image:
-    tag: 4.4.18
+    tag: 4.4.28
 
-  fullnameOverride: mongodb
-  settings:
-    rootUsername: root
+  fullnameOverride: "mongodb"
+  auth:
+    enabled: true
+    rootUser: root
     rootPassword: mongoDbPas42
-
-  # nodeSelector:
-  #   role: infra
 
 ############### Mongo Express ####################
 # mongo express config
