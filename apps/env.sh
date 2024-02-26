@@ -14,8 +14,9 @@ INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
 MOJALOOPBRANCH="main"
-MOJALOOP_REPO_DIR_NAME="mojaloop-repo"
-MOJALOOP_DIR="$APPS_DIR/$MOJALOOP_REPO_DIR_NAME"
+MOJALOOP_REPO_NAME="mojaloop-repo"
+MOJALOOP_DIR="$APPS_DIR/$MOJALOOP_REPO_NAME"
+MOJALOOP_APP_NAME="mojaloop"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
 MOJALOOP_MANIFESTS_DIR=$MOJALOOP_DIR/packages/installer/manifests
@@ -24,9 +25,9 @@ MOJALOOP_TTK_FILES="$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_fi
 MOJALOOP_LAYERS=("apps" "crosscut" "reporting" "ttk")
 # paymenthub
 PHBRANCH="master"
-PH_REPO_DIR_NAME="phee-repo"
-PH_DIR="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo"
-PH_APP_DIR="$APPS_DIR/phee"
+PH_REPO_NAME="paymenthub-repo"
+PH_DIR="$APPS_DIR/$PH_REPO_NAME/helm/g2p-sandbox-fynarfin-demo"
+PH_APP_NAME="paymenthub"
 PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
