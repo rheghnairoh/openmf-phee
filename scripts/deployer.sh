@@ -42,7 +42,7 @@ function infra_restore_mongo_demo_data {
 function deploy_infrastructure() {
     log DEBUG "Deploying infrastructure..."
     create_namespace $INFRA_NAMESPACE
-    helm_deploy_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    helm_deploy_dir "$APPS_DIR/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -180,7 +180,7 @@ function check_mojaloop_health {
 }
 
 function run_failed_sql_statements() {
-    log INFO "Fixing Operations App MySQL Race condition"
+    log INFO "Fixing operations app MySQL race condition"
     operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
     # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < apps/config/db_setup.sql
     mariadb -u$MYSQL_USER -p$MYSQL_PASSWORD -h $MYSQL_HOST -P $MYSQL_PORT <$MYSQL_INIT_FILE
@@ -362,12 +362,6 @@ function configure_paymenthub() {
     fi
 
     cd $ph_chart_dir || exit 1
-
-    # Check if make is installed
-    if ! command -v make &>/dev/null; then
-        log ERROR "make is not installed. Please install it..."
-        exit 1
-    fi
 
     # create secrets for paymenthub namespace and infra namespace
     cd es-secret || exit 1

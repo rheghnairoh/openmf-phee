@@ -62,7 +62,7 @@ function do_k3s_install {
 
     K8S_VERSION="1.28"
     HELM_VERSION="3.12.0"
-    
+
     curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" \
         INSTALL_K3S_CHANNEL="v$K8S_VERSION" \
         INSTALL_K3S_EXEC=" --disable traefik " sh >/dev/null 2>&1
@@ -235,6 +235,15 @@ function install_prerequisites {
             log INFO "sed is installed"
         fi
 
+        # Check if envsubst is installed
+        if ! command -v envsubst &>/dev/null; then
+            log ERROR "envsubst  is not installed. Install and try again ..."
+            log DEBUG " sudo apt-get -y install gettext "
+            exit 1
+        else
+            log INFO "envsubst is installed"
+        fi
+
         # Check if microk8s is installed
         if ! command -v microk8s &>/dev/null; then
             log ERROR "MicroK8s is not installed. Please install and try again..."
@@ -281,7 +290,6 @@ function install_k8s_tools {
     else
         log INFO "Kubens, kubectx is installed."
     fi
-
 }
 
 function add_helm_repos {
@@ -378,6 +386,13 @@ function uninstall_setup {
     su - $k8s_user -c "helm repo update" >/dev/null 2>&1
 
     log WARNING "Rollback environment setup completed."
+}
+
+function apply_config_env_vars {
+    log DEBUG "Substituting env variables in config files"
+    for file_name in $(find $APPS_DIR/config -type f); do
+        envsubst < $file_name
+    done
 }
 
 function setup_env {
