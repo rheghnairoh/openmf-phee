@@ -344,7 +344,7 @@ function setup_paymenthub_env_vars {
 
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    local tenant_prop_file="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
+    local tenant_prop_file="$PH_DIR/config/application-tenantsConnection.properties"
     json_file="$PH_APP_DIR/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
@@ -415,8 +415,7 @@ function deploy_paymenthub() {
     setup_paymenthub_env_vars
     configure_paymenthub
 
-    local chart_dir="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo"
-    helm_deploy_dir  $chart_dir "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir  "$PH_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -438,9 +437,8 @@ function update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
 
-    local chart_dir="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo"
-    helm_deploy_dir $chart_dir "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
-    
+    helm_deploy_dir "$PH_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+
     log OK "==========================="
     log OK "Paymenthub updated."
     log OK "==========================="

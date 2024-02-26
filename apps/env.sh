@@ -15,7 +15,7 @@ INFRA_RELEASE_NAME="infra"
 # mojaloop
 MOJALOOPBRANCH="main"
 MOJALOOP_REPO_DIR_NAME="mojaloop-repo"
-MOJALOOP_DIR="$APPS_DIR/mojaloop"
+MOJALOOP_DIR="$APPS_DIR/$MOJALOOP_REPO_DIR_NAME"
 MOJALOOP_NAMESPACE="mojaloop"
 MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
 MOJALOOP_MANIFESTS_DIR=$MOJALOOP_DIR/packages/installer/manifests
@@ -25,6 +25,7 @@ MOJALOOP_LAYERS=("apps" "crosscut" "reporting" "ttk")
 # paymenthub
 PHBRANCH="master"
 PH_REPO_DIR_NAME="phee-repo"
+PH_DIR="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo"
 PH_APP_DIR="$APPS_DIR/phee"
 PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
