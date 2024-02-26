@@ -391,7 +391,7 @@ function uninstall_setup {
 function apply_config_env_vars {
     log DEBUG "Substituting env variables in config files"
     for file_name in $(find $APPS_DIR/config -type f); do
-        envsubst < $file_name
+        sudo envsubst < $file_name
     done
 }
 
