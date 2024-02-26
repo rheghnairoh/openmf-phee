@@ -18,8 +18,9 @@ function apply_config_env_vars {
     set -a
     source ./apps/env.sh
     set +a
-    for file_name in $(find ./apps/config -type f); do
-        envsubst <$file_name >$DEPLOY_DIR/config/$file_name
+    for file_path in $(find $APPS_DIR/config -type f); do
+        file_name=$(basename ${file_path})
+        envsubst <$file_path >$DEPLOY_DIR/config/$file_name
     done
 }
 
