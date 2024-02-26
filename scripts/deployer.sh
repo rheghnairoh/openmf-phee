@@ -7,20 +7,22 @@ source ./apps/env.sh
 source ./scripts/logger.sh
 source ./scripts/helper.sh
 
-function apply_config_env_vars {
+function apply_preinstall_env_vars {
     log DEBUG "Substituting env variables in config files"
-
-    if [ -d "$DEPLOY_DIR/config" ]; then
-        rm -rf "$DEPLOY_DIR/config"
-    fi
-    mkdir -p "$DEPLOY_DIR/config"
-
     set -a
     source ./apps/env.sh
     set +a
-    for file_path in $(find $APPS_DIR/config -type f); do
+
+    mkdir -p "$DEPLOY_DIR/mojaloop"
+    for file_path in $(find $APPS_DIR/mojaloop -type f); do
         file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/config/$file_name
+        envsubst <$file_path >$DEPLOY_DIR/mojaloop/$file_name
+    done
+
+    mkdir -p "$DEPLOY_DIR/phee"
+    for file_path in $(find $APPS_DIR/phee -type f); do
+        file_name=$(basename ${file_path})
+        envsubst <$file_path >$DEPLOY_DIR/phee/$file_name
     done
 }
 
@@ -268,7 +270,7 @@ function post_paymenthub_deployment_script() {
 
 function configure_mojaloop_manifests_values() {
     log DEBUG "Configuring mojaloop manifests"
-    local json_file=$MOJALOOP_VALUES_FILE
+    local json_file="$APPS_DIR/mojaloop/mojaloop_values.json"
     local property_name
     local old_value
     local new_value
@@ -313,7 +315,7 @@ function deploy_mojaloop_layers() {
 function deploy_mojaloop() {
     log DEBUG "Deploying mojaloop application manifests"
     create_namespace "$MOJALOOP_NAMESPACE"
-    clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
+    clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOP_REPO_DIR_NAME"
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
 
@@ -342,8 +344,8 @@ function setup_paymenthub_env_vars {
 
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    local tenant_prop_file="$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
-    json_file="$DEPLOY_DIR/config/tenant_connection_values.json"
+    local tenant_prop_file="$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
+    json_file="$APPS_DIR/phee/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -355,7 +357,7 @@ function setup_paymenthub_env_vars {
     # setup ph env values
     log DEBUG "Updating env variables in $PH_VALUES_FILE"
     values_file="$DEPLOY_DIR/$PH_VALUES_FILE"
-    json_file="$DEPLOY_DIR/config/paymenthub_values.json"
+    json_file="$APPS_DIR/phee/paymenthub_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -365,7 +367,7 @@ function setup_paymenthub_env_vars {
 }
 
 function configure_paymenthub() {
-    local ph_chart_dir="$APPS_DIR/$PHREPO_DIR/helm"
+    local ph_chart_dir="$APPS_DIR/$PH_REPO_DIR_NAME/helm"
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
@@ -409,11 +411,11 @@ function configure_paymenthub() {
 function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
-    clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
+    clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_REPO_DIR_NAME"
     setup_paymenthub_env_vars
     configure_paymenthub
 
-    helm_deploy_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -434,7 +436,7 @@ function update_infrastructure() {
 function update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
-    helm_deploy_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$APPS_DIR/$PH_REPO_DIR_NAME/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
     log OK "==========================="
     log OK "Paymenthub updated."
     log OK "==========================="
