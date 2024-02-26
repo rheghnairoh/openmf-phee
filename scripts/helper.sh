@@ -27,7 +27,7 @@ function replace_values_in_file() {
         "New value: $new_value"
 
     # Use sed to update the YAML file with the new value
-    if sed -i "s/$old_value/$new_value/" "$file"; then
+    if sed -i 's/'$old_value'/'$new_value'/' "$file"; then
         log INFO "Value updated successfully."
         return 0
     else
