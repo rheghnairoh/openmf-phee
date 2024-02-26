@@ -74,7 +74,7 @@ function create_secret() {
     fi
 }
 
-function deploy_helm_chart_from_dir() {
+function helm_deploy_dir() {
     # Check if Helm is installed
     if ! command -v helm &>/dev/null; then
         log ERROR "Helm not installed. Please install Helm first."
