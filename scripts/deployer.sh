@@ -10,7 +10,7 @@ source ./scripts/helper.sh
 function apply_preinstall_env_vars {
     log DEBUG "Substituting env variables in config files"
     set -a
-    source ./apps/env.sh
+    source $APPS_DIR/env.sh
     set +a
 
     mkdir -p "$DEPLOY_DIR/mojaloop"
