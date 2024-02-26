@@ -10,15 +10,16 @@ source ./scripts/helper.sh
 function apply_config_env_vars {
     log DEBUG "Substituting env variables in config files"
 
-    if [ ! -d "$DEPLOY_DIR/config" ]; then
-        mkdir -p "$DEPLOY_DIR/config"
+    if [ -d "$DEPLOY_DIR/config" ]; then
+        rm -rf "$DEPLOY_DIR/config"
     fi
+    mkdir -p "$DEPLOY_DIR/config"
 
     set -a
     source ./apps/env.sh
     set +a
     for file_name in $(find $APPS_DIR/config -type f); do
-        envsubst < $file_name > "$DEPLOY_DIR/config/$file_name"
+        envsubst <$file_name >"$DEPLOY_DIR/config/$file_name"
     done
 }
 
@@ -337,7 +338,7 @@ function setup_paymenthub_env_vars {
 
     log INFO "Copy paymenthub values file to deployment"
     copy_to_deploy_dir "$APPS_DIR/$PH_VALUES_FILE" "$PH_VALUES_FILE"
-    
+
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     local tenant_prop_file="$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
