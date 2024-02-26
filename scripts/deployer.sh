@@ -351,10 +351,10 @@ function configure_paymenthub() {
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
-    prom_pod_status=$(kubectl get pods --namespace default --no-headers | grep prometheus-operator)
+    prom_pod_status=$(kubectl get pods --namespace $PH_NAMESPACE --no-headers | grep prometheus-operator)
     if [[ "$prom_pod_status" != "Running" ]]; then
         LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-        log DEBUG "Deploying prometheus operator ${LATEST}"
+        log DEBUG "Deploying prometheus operator ${LATEST} in $PH_NAMESPACE namespace"
         su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -n $PH_NAMESPACE -f -"
     else
         log INFO "Prometheus operator already deployed and running..."
