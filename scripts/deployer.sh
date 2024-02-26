@@ -351,11 +351,14 @@ function configure_paymenthub() {
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
-    LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
-    log DEBUG "Creating prometheus operator resources ${LATEST}"
-    kubens $PH_NAMESPACE
-    su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -f -"
-    kubens -
+    prom_pod_status=$(kubectl get pods --namespace default --no-headers | grep prometheus-operator)
+    if [[ "$prom_pod_status" != "Running" ]]; then
+        LATEST=$(curl -s https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest | jq -cr .tag_name)
+        log DEBUG "Deploying prometheus operator ${LATEST}"
+        su - $k8s_user -c "curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/${LATEST}/bundle.yaml | kubectl create -n $PH_NAMESPACE -f -"
+    else
+        log INFO "Prometheus operator already deployed and running..."
+    fi
 
     cd $ph_chart_dir || exit 1
 
@@ -405,7 +408,7 @@ function deploy_paymenthub() {
     log OK "============================"
 
     log DEBUG "Run postinstall for paymenthub when all pods are running. \n" \
-        "     sudo $0 -u $USER postinstall mojaloop"
+        "     sudo $0 -u $USER postinstall paymenthub"
 }
 
 function update_infrastructure() {
