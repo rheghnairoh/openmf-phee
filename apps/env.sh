@@ -36,8 +36,8 @@ PH_MESSAGE_GATEWAY_PROJECT_ID=AC7243e41db602c5ddde0cdb3537d7003f
 # Elastic Search
 PH_ELASTICSEARCH_PASSWORD=elasticSearchPas42
 # Define Kubernetes service and MySQL connection details
-MYSQL_USER="mifos"
-MYSQL_PASSWORD="password"
-MYSQL_HOST="counselorservice.sytes.net"
-MYSQL_PORT="3306"
-MYSQL_INIT_FILE="$APPS_DIR/config/db_setup.sql"
+PH_MYSQL_USER="mifos"
+PH_MYSQL_PASSWORD="password"
+PH_MYSQL_HOST="counselorservice.sytes.net"
+PH_MYSQL_PORT="3306"
+PH_MYSQL_INIT_FILE="$APPS_DIR/config/db_setup.sql"

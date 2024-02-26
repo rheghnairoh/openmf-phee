@@ -1,22 +1,22 @@
 [
   {
-    "property_name": "MYSQL_HOST",
+    "property_name": "PH_MYSQL_HOST",
     "old_value": "schema_server=operationsmysql",
-    "new_value": "schema_server=$MYSQL_HOST"
+    "new_value": "schema_server=$PH_MYSQL_HOST"
   },
   {
-    "property_name": "MYSQL_PORT",
+    "property_name": "PH_MYSQL_PORT",
     "old_value": "3306",
-    "new_value": "$MYSQL_PORT"
+    "new_value": "$PH_MYSQL_PORT"
   },
   {
-    "property_name": "MYSQL_USER",
+    "property_name": "PH_MYSQL_USER",
     "old_value": "schema_username=mifos",
-    "new_value": "schema_username=$MYSQL_USER"
+    "new_value": "schema_username=$PH_MYSQL_USER"
   },
   {
-    "property_name": "MYSQL_PASSWORD",
+    "property_name": "PH_MYSQL_PASSWORD",
     "old_value": "schema_password=password",
-    "new_value": "schema_password=$MYSQL_PASSWORD"
+    "new_value": "schema_password=$PH_MYSQL_PASSWORD"
   }
 ]
