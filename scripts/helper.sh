@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # helper.sh : Helper Utilities
-# Author:  Honest Chirozva 
-# Date :   February 2024 
-
+# Author:  Honest Chirozva
+# Date :   February 2024
 
 source ./apps/env.sh
 source ./scripts/logger.sh
@@ -75,7 +74,7 @@ function create_secret() {
     fi
 }
 
-function deploy_helm_chart_from_dir() {
+function helm_deploy_dir() {
     # Check if Helm is installed
     if ! command -v helm &>/dev/null; then
         log ERROR "Helm not installed. Please install Helm first."
@@ -194,11 +193,10 @@ function clone_repo() {
     cd - || return 1
 }
 
-function copy_dir_to_tmp {
-    from_dir="$1"
-    to_dir="$2"
-  log INFO "Copying directory $from_dir to /tmp/openmf-phee/$to_dir"
-  rm -rf /tmp/openmf-phee/$to_dir
-  cp -r $from_dir /tmp/openmf-phee
-  log INFO "Copy directory complete"
+function copy_to_deploy_dir {
+    from_path="$1"
+    to_path="$2"
+    log INFO "Copying $from_path to $DEPLOY_DIR/$to_path"
+    rm -rf $DEPLOY_DIR/$to_path
+    cp -r $from_path $DEPLOY_DIR/$to_path
 }

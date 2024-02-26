@@ -8,6 +8,8 @@
 ########################################################################
 BASE_DIR=$(pwd)
 APPS_DIR="$BASE_DIR/apps"
+DEPLOY_DIR="$BASE_DIR/deploy"
+#infra
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
@@ -19,19 +21,14 @@ MOJALOOP_REPO_LINK="https://github.com/mojaloop/platform-shared-tools.git"
 MOJALOOP_MANIFESTS_DIR=$MOJALOOP_DIR/packages/installer/manifests
 MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files/mongodb
 MOJALOOP_TTK_FILES="$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files"
-MOJALOOP_LAYER_DIRS=(
-    "$MOJALOOP_MANIFESTS_DIR/apps"
-    "$MOJALOOP_MANIFESTS_DIR/crosscut"
-    "$MOJALOOP_MANIFESTS_DIR/reporting"
-    "$MOJALOOP_MANIFESTS_DIR/ttk"
-)
+MOJALOOP_LAYERS=("apps" "crosscut" "reporting" "ttk")
 MOJALOOP_VALUES_FILE="$APPS_DIR/config/mojaloop_values.json"
 # paymenthub
 PHBRANCH="master"
 PHREPO_DIR="phee"
 PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
-PH_VALUES_FILE="$APPS_DIR/ph_values.yaml"
+PH_VALUES_FILE="ph_values.yaml"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
 PH_HOSTNAME="counselorservice.sytes.net"
 PH_MESSAGE_GATEWAY_API_KEY=aadc326ccee4e35716352520d2ec367b

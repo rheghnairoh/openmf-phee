@@ -42,7 +42,7 @@ function infra_restore_mongo_demo_data {
 function deploy_infrastructure() {
     log DEBUG "Deploying infrastructure..."
     create_namespace $INFRA_NAMESPACE
-    deploy_helm_chart_from_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    helm_deploy_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -250,23 +250,18 @@ function post_paymenthub_deployment_script() {
 }
 
 function configure_mojaloop_manifests_values() {
-    log DEBUG "Configuring Mojaloop Manifests"
+    log DEBUG "Configuring mojaloop manifests"
     local json_file=$MOJALOOP_VALUES_FILE
     local property_name
     local old_value
     local new_value
 
-    # Check if jq is installed, if not, exit with an error message
-    if ! command -v jq &>/dev/null; then
-        log ERROR "'jq' is not installed. Please install it (https://stedolan.github.io/jq/)."
-        exit 1
-    fi
-
-    # Check if the JSON file exists
-    if [ ! -f "$json_file" ]; then
-        log ERROR "JSON file '$json_file' does not exist."
-        return 1
-    fi
+    log INFO "Copy mojaloop manifests to deployment"
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_dir="${MOJALOOP_LAYERS[index]}"
+        layer_source_dir="$MOJALOOP_MANIFESTS_DIR/$layer_dir"
+        copy_to_deploy_dir "$layer_source_dir" "$layer_dir"
+    done
 
     jq -c '.[]' "$json_file" | while read -r json_object; do
         # Extract attributes from the JSON object
@@ -275,9 +270,9 @@ function configure_mojaloop_manifests_values() {
         new_value=$(echo "$json_object" | jq -r ".new_value")
 
         log DEBUG "Configure $property_name in mojaloop manifests"
-        for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
-            folder="${MOJALOOP_LAYER_DIRS[index]}"
-            for file_name in $(find $folder -type f); do
+        for index in "${!MOJALOOP_LAYERS[@]}"; do
+            layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
+            for file_name in $(find $layer_dir -type f); do
                 replace_values_in_file "$file_name" "$old_value" "$new_value"
             done
         done
@@ -291,18 +286,17 @@ function configure_mojaloop_manifests_values() {
 }
 
 function deploy_mojaloop_layers() {
-    for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
-        folder="${MOJALOOP_LAYER_DIRS[index]}"
-        log INFO "Deploying files in $folder"
-        install_mojaloop_layer "$folder" "$MOJALOOP_NAMESPACE"
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
+        log INFO "Deploying files in $layer_dir"
+        install_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
     done
 }
 
 function deploy_mojaloop() {
-    log DEBUG "Deploying Mojaloop application manifests"
+    log DEBUG "Deploying mojaloop application manifests"
     create_namespace "$MOJALOOP_NAMESPACE"
     clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOPREPO_DIR"
-    # rename_off_files_to_yaml "${MOJALOOP_LAYER_DIRS[0]}"
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
 
@@ -318,25 +312,32 @@ function deploy_mojaloop() {
     check_mojaloop_health
 }
 
-function configure_paymenthub_env_vars {
+function setup_paymenthub_env_vars {
+    log DEBUG "Setting up paymenthub environment variables"
     local property_name
     local old_value
     local new_value
     local json_file
     local values_file
 
+    log INFO "Copy paymenthub values file to deployment"
+    copy_to_deploy_dir "$APPS_DIR/$PH_VALUES_FILE" "$PH_VALUES_FILE"
+    
+    # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    values_file="apps/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
+    local tenant_prop_file = "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
     json_file="$APPS_DIR/config/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
         new_value=$(echo "$json_object" | jq -r ".new_value")
-        replace_values_in_file "$values_file" "$old_value" "$new_value"
+        replace_values_in_file "$tenant_prop_file" "$old_value" "$new_value"
     done
+    copy_to_deploy_dir "$tenant_prop_file" "application-tenantsConnection.properties"
 
-    log DEBUG "Updating env variables in ph_values.yaml"
-    values_file="apps/ph_values.yaml"
+    # setup ph env values
+    log DEBUG "Updating env variables in $PH_VALUES_FILE"
+    values_file="$DEPLOY_DIR/$PH_VALUES_FILE"
     json_file="$APPS_DIR/config/paymenthub_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
@@ -347,7 +348,7 @@ function configure_paymenthub_env_vars {
 }
 
 function configure_paymenthub() {
-    local ph_chart_dir=$1
+    local ph_chart_dir="$APPS_DIR/$PHREPO_DIR/helm"
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
@@ -398,10 +399,10 @@ function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
     clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PHREPO_DIR"
-    configure_paymenthub_env_vars
-    configure_paymenthub "$APPS_DIR/$PHREPO_DIR/helm"
+    setup_paymenthub_env_vars
+    configure_paymenthub
 
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    helm_deploy_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -413,7 +414,7 @@ function deploy_paymenthub() {
 
 function update_infrastructure() {
     log DEBUG "Updating infrastructure"
-    deploy_helm_chart_from_dir "./apps/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    helm_deploy_dir "$APPS_DIR/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
     log OK "==========================="
     log OK "Infrastructure updated."
     log OK "==========================="
@@ -421,8 +422,8 @@ function update_infrastructure() {
 
 function update_paymenthub() {
     log DEBUG "Updating paymenthub"
-    configure_paymenthub_env_vars
-    deploy_helm_chart_from_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    setup_paymenthub_env_vars
+    helm_deploy_dir "$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
     log OK "==========================="
     log OK "Paymenthub updated."
     log OK "==========================="
@@ -461,9 +462,9 @@ function uninstall_paymenthub() {
 
 function uninstall_mojaloop() {
     log WARNING "Uninstalling mojaloop..."
-    for index in "${!MOJALOOP_LAYER_DIRS[@]}"; do
-        folder="${MOJALOOP_LAYER_DIRS[index]}"
-        delete_mojaloop_layer "$folder" "$MOJALOOP_NAMESPACE"
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
+        delete_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
     done
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 }

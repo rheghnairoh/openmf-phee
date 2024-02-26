@@ -3,6 +3,7 @@
 # Author:  Honest Chirozva
 # Date :   February 2024
 
+source ./apps/env.sh
 source ./scripts/logger.sh
 
 function check_arch_ok {
@@ -398,6 +399,11 @@ function setup_env {
     if [ "$EUID" -ne 0 ]; then
         log ERROR "Please run as root"
         exit 1
+    fi
+
+    # make tmp dir
+    if [ ! -d "$DEPLOY_DIR" ]; then
+        mkdir -p "$DEPLOY_DIR"
     fi
 
     check_arch_ok
