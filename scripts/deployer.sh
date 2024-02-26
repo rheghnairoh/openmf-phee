@@ -14,16 +14,16 @@ function apply_preinstall_env_vars {
     set +a
 
     # create deploy dirs
-    mkdir -p "$DEPLOY_DIR/phee"
+    mkdir -p "$DEPLOY_DIR/paymenthub"
     mkdir -p "$DEPLOY_DIR/mojaloop"
 
     for file_path in $(find $APPS_DIR/mojaloop -type f); do
         file_name=$(basename ${file_path})
         envsubst <$file_path >$DEPLOY_DIR/mojaloop/$file_name
     done
-    for file_path in $(find $APPS_DIR/phee -type f); do
+    for file_path in $(find $APPS_DIR/paymenthub -type f); do
         file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/phee/$file_name
+        envsubst <$file_path >$DEPLOY_DIR/paymenthub/$file_name
     done
 }
 
@@ -343,7 +343,7 @@ function setup_paymenthub_env_vars {
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     local tenant_prop_file="$PH_DIR/config/application-tenantsConnection.properties"
-    json_file="$DEPLOY_DIR/phee/tenant_connection_values.json"
+    json_file="$DEPLOY_DIR/paymenthub/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -354,11 +354,11 @@ function setup_paymenthub_env_vars {
 
     # setup ph env values
     log INFO "Copy paymenthub values file to deployment"
-    copy_to_deploy_dir "$APPS_DIR/phee/$PH_VALUES_FILE" "$PH_VALUES_FILE"
+    copy_to_deploy_dir "$APPS_DIR/paymenthub/$PH_VALUES_FILE" "$PH_VALUES_FILE"
 
     log DEBUG "Updating env variables in $PH_VALUES_FILE"
     values_file="$DEPLOY_DIR/$PH_VALUES_FILE"
-    json_file="$DEPLOY_DIR/phee/paymenthub_values.json"
+    json_file="$DEPLOY_DIR/paymenthub/paymenthub_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
