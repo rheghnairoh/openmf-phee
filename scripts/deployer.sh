@@ -7,6 +7,21 @@ source ./apps/env.sh
 source ./scripts/logger.sh
 source ./scripts/helper.sh
 
+function apply_config_env_vars {
+    log DEBUG "Substituting env variables in config files"
+
+    if [ ! -d "$DEPLOY_DIR/config" ]; then
+        mkdir -p "$DEPLOY_DIR/config"
+    fi
+
+    set -a
+    source ./apps/env.sh
+    set +a
+    for file_name in $(find $APPS_DIR/config -type f); do
+        envsubst < $file_name > "$DEPLOY_DIR/config/$file_name"
+    done
+}
+
 function infra_restore_mongo_demo_data {
     local mongo_data_dir=$MOJALOOP_MONGO_IMPORT_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
@@ -326,7 +341,7 @@ function setup_paymenthub_env_vars {
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     local tenant_prop_file="$APPS_DIR/$PHREPO_DIR/helm/g2p-sandbox-fynarfin-demo/config/application-tenantsConnection.properties"
-    json_file="$APPS_DIR/config/tenant_connection_values.json"
+    json_file="$DEPLOY_DIR/config/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -338,7 +353,7 @@ function setup_paymenthub_env_vars {
     # setup ph env values
     log DEBUG "Updating env variables in $PH_VALUES_FILE"
     values_file="$DEPLOY_DIR/$PH_VALUES_FILE"
-    json_file="$APPS_DIR/config/paymenthub_values.json"
+    json_file="$DEPLOY_DIR/config/paymenthub_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')

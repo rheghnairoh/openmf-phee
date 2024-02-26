@@ -388,13 +388,6 @@ function uninstall_setup {
     log WARNING "Rollback environment setup completed."
 }
 
-function apply_config_env_vars {
-    log DEBUG "Substituting env variables in config files"
-    for file_name in $(find $APPS_DIR/config -type f); do
-        sudo envsubst < $file_name
-    done
-}
-
 function setup_env {
 
     k8s_distro="$1"
