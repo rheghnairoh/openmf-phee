@@ -13,7 +13,7 @@ DEPLOY_DIR="$BASE_DIR/deploy"
 INFRA_NAMESPACE="infra"
 INFRA_RELEASE_NAME="infra"
 # mojaloop
-MOJALOOPBRANCH="main"
+MOJALOOP_BRANCH="main"
 MOJALOOP_REPO_NAME="mojaloop-repo"
 MOJALOOP_DIR="$APPS_DIR/$MOJALOOP_REPO_NAME"
 MOJALOOP_APP_NAME="mojaloop"
@@ -24,7 +24,7 @@ MOJALOOP_MONGO_IMPORT_DIR=$MOJALOOP_DIR/packages/deployment/docker-compose-apps/
 MOJALOOP_TTK_FILES="$MOJALOOP_DIR/packages/deployment/docker-compose-apps/ttk_files"
 MOJALOOP_LAYERS=("apps" "crosscut" "reporting" "ttk")
 # paymenthub
-PHBRANCH="master"
+PH_BRANCH="master"
 PH_REPO_NAME="paymenthub-repo"
 PH_DIR="$APPS_DIR/$PH_REPO_NAME/helm/g2p-sandbox-fynarfin-demo"
 PH_APP_NAME="paymenthub"

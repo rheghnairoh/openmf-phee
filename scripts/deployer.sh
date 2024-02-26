@@ -316,7 +316,7 @@ function deploy_mojaloop_layers() {
 function deploy_mojaloop() {
     log DEBUG "Deploying mojaloop application manifests"
     create_namespace "$MOJALOOP_NAMESPACE"
-    clone_repo "$MOJALOOPBRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOP_REPO_NAME"
+    clone_repo "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOP_REPO_NAME"
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
 
@@ -412,7 +412,7 @@ function configure_paymenthub() {
 function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
-    clone_repo "$PHBRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_REPO_NAME"
+    clone_repo "$PH_BRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_REPO_NAME"
     setup_paymenthub_env_vars
     configure_paymenthub
 
