@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 
-function set_logfiles {
+function set_logfiles() {
   # set the logfiles
   if [ ! -z ${logfiles+x} ]; then 
     LOGFILE="/tmp/$logfiles.log"

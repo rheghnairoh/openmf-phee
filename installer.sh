@@ -6,7 +6,7 @@
 source ./scripts/config_env.sh
 source ./scripts/deployer.sh
 
-function welcome {
+function welcome() {
     log " \n"
     log "===================================================="
     log "       Payment Hub EE x Mojaloop Installer          "
@@ -14,7 +14,7 @@ function welcome {
     log " \n"
 }
 
-function showUsage {
+function showUsage() {
     if [ $# -ne 0 ]; then
         echo "Incorrect number of arguments passed to function $0"
         exit 1
@@ -43,7 +43,7 @@ EXAMPLES:
 
 }
 
-function getoptions {
+function getoptions() {
     while getopts "u:hH" OPTION; do
         case "${OPTION}" in
         u)
@@ -91,9 +91,17 @@ trap "trapCtrlC" 2
 ###########################################################################
 # MAIN
 ###########################################################################
-function main {
+function main() {
     # set env vars
     k8s_distro="${K8S_DISTRO:-microk8s}"
+    k8s_user_home=""
+    k8s_arch=$(uname -p) # what arch
+    MIN_RAM=30
+    MIN_FREE_SPACE=60
+    DEFAULT_HELM_TIMEOUT_SECS="1200s" # default timeout for deplying helm chart
+    TIMEOUT_SECS=$DEFAULT_HELM_TIMEOUT_SECS
+    EXTERNAL_ENDPOINTS_LIST=("mongoexpress.local" "vnextadmin.local" "elasticsearch.local" "kibana.local"
+        "kafkaconsole.local" "fspiop.local" "bluebank.local" "greenbank.local")
 
     welcome
     getoptions "$@"

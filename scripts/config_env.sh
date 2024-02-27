@@ -6,17 +6,17 @@
 source ./apps/env.sh
 source ./scripts/logger.sh
 
-function check_arch_ok {
+function check_arch_ok() {
     if [[ ! "$k8s_arch" == "x86_64" ]]; then
         log WARNING "This installation works properly with x86_64"
     fi
 }
 
-function check_resources_ok {
+function check_resources_ok() {
     # Get the total amount of installed RAM in GB
-    total_ram=$(free -g | awk '/^Mem:/{print $2}')
+    local total_ram=$(free -g | awk '/^Mem:/{print $2}')
     # Get the current free space on the root filesystem in GB
-    free_space=$(df -BG ~ | awk '{print $4}' | tail -n 1 | sed 's/G//')
+    local free_space=$(df -BG ~ | awk '{print $4}' | tail -n 1 | sed 's/G//')
 
     # Check RAM
     if [[ "$total_ram" -lt "$MIN_RAM" ]]; then
@@ -32,7 +32,7 @@ function check_resources_ok {
     fi
 }
 
-function set_linux_os_distro {
+function set_linux_os_distro() {
     LINUX_VERSION="Unknown"
     if [ -x "/usr/bin/lsb_release" ]; then
         LINUX_OS=$(lsb_release --d | perl -ne 'print  if s/^.*Ubuntu.*(\d+).(\d+).*$/Ubuntu/')
@@ -43,7 +43,7 @@ function set_linux_os_distro {
     log INFO "Linux OS is [$LINUX_OS]"
 }
 
-function check_os_ok {
+function check_os_ok() {
     log INFO "Checking OS distro"
     set_linux_os_distro
     if [[ ! $LINUX_OS == "Ubuntu" ]]; then
@@ -52,7 +52,7 @@ function check_os_ok {
     fi
 }
 
-function do_k3s_install {
+function do_k3s_install() {
     log INFO "===================================================================="
     log INFO " Installing Kubernetes k3s engine and tools (helm/ingress etc)"
     log INFO "===================================================================="
@@ -68,7 +68,7 @@ function do_k3s_install {
         INSTALL_K3S_EXEC=" --disable traefik " sh >/dev/null 2>&1
 
     # check k3s installed ok
-    status=$(k3s check-config 2>/dev/null | grep "^STATUS" | awk '{print $2}')
+    local status=$(k3s check-config 2>/dev/null | grep "^STATUS" | awk '{print $2}')
     if [[ "$status" -eq "pass" ]]; then
         log INFO "  [ok] check-config reporting status of pass"
     else
@@ -92,7 +92,7 @@ function do_k3s_install {
 
     # install helm
     log INFO "Installing helm "
-    helm_arch_str=""
+    local helm_arch_str=""
     if [[ "$k8s_arch" == "x86_64" ]]; then
         helm_arch_str="amd64"
     elif [[ "$k8s_arch" == "aarch64" ]] || [[ "$k8s_arch" == "arm64" ]]; then
@@ -119,7 +119,7 @@ function do_k3s_install {
     log INFO "Installing nginx ingress chart and wait for it to be ready"
     su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx \
                       --repo https://kubernetes.github.io/ingress-nginx \
-                      -f $MOJALOOP_DIR/packages/installer/manifests/infra/nginx-values.yaml" >/dev/null 2>&1
+                      -f $MOJALOOP_REPO/packages/installer/manifests/infra/nginx-values.yaml" >/dev/null 2>&1
     # TODO : check to ensure that the ingress is indeed running
     nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
 
@@ -137,7 +137,7 @@ function do_k3s_install {
 
 }
 
-function configure_microk8s {
+function configure_microk8s() {
     log INFO "Configure microK8s..."
 
     log DEBUG "Waiting microk8s to come online..."
@@ -182,7 +182,7 @@ function configure_microk8s {
     log OK "Microk8s configuration complete"
 }
 
-function install_prerequisites {
+function install_prerequisites() {
     log DEBUG "Checking prerequisites..."
 
     if [[ $LINUX_OS == "Ubuntu" ]]; then
@@ -333,7 +333,7 @@ function verify_user {
     fi
 }
 
-function check_k8s_installed {
+function check_k8s_installed() {
     log INFO "Checking cluster is available and ready for kubectl"
     k8s_ready=$(su - $k8s_user -c "kubectl get nodes" | perl -ne 'print  if s/^.*Ready.*$/Ready/')
     if [[ ! "$k8s_ready" == "Ready" ]]; then
@@ -343,13 +343,13 @@ function check_k8s_installed {
     log OK "Kubernetes installed and ready..."
 }
 
-function print_end_message {
+function print_end_message() {
     echo -e "\n${GREEN}============================"
     echo -e "Installation complete"
     echo -e "============================${RESET}\n"
 }
 
-function uninstall_setup {
+function uninstall_setup() {
     log WARNING "Rolling back environment setup..."
     log INFO "Packages added externally require manual uninstall: \n" \
         " - docker : sudo snap remove docker \n" \
@@ -388,20 +388,8 @@ function uninstall_setup {
     log WARNING "Rollback environment setup completed."
 }
 
-function setup_env {
-
+function setup_env() {
     k8s_distro="$1"
-    k8s_user_home=""
-    k8s_arch=$(uname -p) # what arch
-    # Set the minimum amount of RAM in GB
-    MIN_RAM=30
-    MIN_FREE_SPACE=60
-
-    DEFAULT_HELM_TIMEOUT_SECS="1200s" # default timeout for deplying helm chart
-    TIMEOUT_SECS=$DEFAULT_HELM_TIMEOUT_SECS
-
-    EXTERNAL_ENDPOINTS_LIST=("mongoexpress.local" "vnextadmin.local" "elasticsearch.local" "kibana.local"
-        "kafkaconsole.local" "fspiop.local" "bluebank.local" "greenbank.local")
 
     # ensure we are running as root
     if [ "$EUID" -ne 0 ]; then

@@ -91,7 +91,7 @@ function helm_deploy_dir() {
     fi
 
     # Check if a values file has been provided
-    values_file="$4"
+    local values_file="$4"
 
     # Enter the chart directory
     cd "$chart_dir" || exit 1
@@ -118,7 +118,7 @@ function helm_deploy_dir() {
     log INFO "Helm chart upgraded"
 
     # Use kubectl to get the resource count in the specified namespace
-    resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
+    local resource_count=$(kubectl get pods -n "$namespace" --ignore-not-found=true 2>/dev/null | grep -v "No resources found" | wc -l)
     # Check if the deployment was successful
     if [ $resource_count -gt 0 ]; then
         log OK "Helm chart deployed successfully."
@@ -154,16 +154,16 @@ function create_namespace() {
     fi
 }
 
-function clone_repo() {
+function clone_repository() {
     if [ "$#" -ne 4 ]; then
-        log ERROR "Usage: clone_repo <branch> <repo_link> <target_directory> <cloned_directory_name>"
+        log ERROR "Usage: clone_repository <branch> <repo_link> <target_directory> <cloned_directory_name>"
         return 1
     fi
 
-    branch="$1"
-    repo_link="$2"
-    target_directory="$3"
-    cloned_directory_name="$4"
+    local branch="$1"
+    local repo_link="$2"
+    local target_directory="$3"
+    local cloned_directory_name="$4"
     log DEBUG "Cloning repository $repo_link"
 
     # Check if the target directory exists; if not, create it.
@@ -193,9 +193,9 @@ function clone_repo() {
     cd - || return 1
 }
 
-function copy_to_deploy_dir {
-    from_path="$1"
-    to_path="$2"
+function copy_to_deploy_dir() {
+    local from_path="$1"
+    local to_path="$2"
     log INFO "Copying $from_path to $DEPLOY_DIR/$to_path"
     rm -rf $DEPLOY_DIR/$to_path
     cp -r $from_path $DEPLOY_DIR/$to_path

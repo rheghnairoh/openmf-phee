@@ -7,7 +7,7 @@ source ./apps/env.sh
 source ./scripts/logger.sh
 source ./scripts/helper.sh
 
-function apply_preinstall_env_vars {
+function apply_preinstall_env_vars() {
     log DEBUG "Substituting env variables in config files"
     set -a
     source $APPS_DIR/env.sh
@@ -15,11 +15,12 @@ function apply_preinstall_env_vars {
 
     # create deploy dirs
     mkdir -p "$DEPLOY_DIR/paymenthub"
-    mkdir -p "$DEPLOY_DIR/mojaloop"
+    mkdir -p "$DEPLOY_DIR/$MOJALOOP_NAME"
 
-    for file_path in $(find $APPS_DIR/mojaloop -type f); do
+    local file_name
+    for file_path in $(find $APPS_DIR/$MOJALOOP_NAME -type f); do
         file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/mojaloop/$file_name
+        envsubst <$file_path >$DEPLOY_DIR/$MOJALOOP_NAME/$file_name
     done
     for file_path in $(find $APPS_DIR/paymenthub -type f); do
         file_name=$(basename ${file_path})
@@ -27,11 +28,11 @@ function apply_preinstall_env_vars {
     done
 }
 
-function infra_restore_mongo_demo_data {
-    local mongo_data_dir=$MOJALOOP_MONGO_IMPORT_DIR
+function infra_restore_mongo_demo_data() {
+    local mongo_data_dir=$MOJALOOP_REPO_MONGO_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
 
-    pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    local pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
     while [[ "$pod_status" != "Running" ]]; do
         log INFO "MongoDB seems not running...waiting for pods to come up."
         sleep 5
@@ -42,8 +43,8 @@ function infra_restore_mongo_demo_data {
     #   trap 'handle_warning $LINENO "$error_message"' ERR
     log INFO "Restoring demonstration/test data and ttk configs"
     # temporary measure to inject base participants data into switch
-    mongopod=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $1}')
-    mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
+    local mongopod=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $1}')
+    local mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
     #kubectl cp $mongo_data_dir/mongodata.gz $mongopod:/tmp >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
     log INFO "$mongo_data_dir/mongodump-beta.gz"
     kubectl cp $mongo_data_dir/mongodump-beta.gz $mongopod:/tmp/mongodump.gz >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
@@ -56,13 +57,13 @@ function infra_restore_mongo_demo_data {
     # run the mongorestore
     kubectl exec --stdin --tty $mongopod -- mongorestore -u root -p $mongo_root_pw \
         --gzip --archive=/tmp/mongodump.gz --authenticationDatabase admin >/dev/null 2>&1
-    log INFO "Restore demo data done."
+    log INFO "Restore demo data complete."
 }
 
 function deploy_infrastructure() {
     log DEBUG "Deploying infrastructure..."
     create_namespace $INFRA_NAMESPACE
-    helm_deploy_dir "$APPS_DIR/infra/" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    helm_deploy_dir "$APPS_DIR/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -87,13 +88,13 @@ function install_mojaloop_layer() {
 
     cd "$directory" || return 1
     # select non docker files
-    non_data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-")
-    data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -i "\-data\-")
+    local non_data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-")
+    local data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -i "\-data\-")
     for file in $data_resource_files; do
-        kubectl apply -f $file -n "$namespace" >/dev/null 2>&1
+        kubectl apply -f $file -n $namespace >/dev/null 2>&1
     done
     for file in $non_data_resource_files; do
-        kubectl apply -f $file -n "$namespace" >/dev/null 2>&1
+        kubectl apply -f $file -n $namespace >/dev/null 2>&1
     done
 
     if [ $? -eq 0 ]; then
@@ -113,13 +114,13 @@ function delete_mojaloop_layer() {
     log INFO "Delete layer resources in mojaloop $directory"
     cd "$directory" || return 1
 
-    non_data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-")
-    data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -i "\-data\-")
+    local non_data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -v "\-data\-")
+    local data_resource_files=$(ls *.yaml | grep -v '^docker-' | grep -i "\-data\-")
     for file in $non_data_resource_files; do
-        kubectl delete -f $file >/dev/null 2>&1
+        kubectl delete -f $file -n $namespace >/dev/null 2>&1
     done
     for file in $data_resource_files; do
-        kubectl delete -f $file >/dev/null 2>&1
+        kubectl delete -f $file -n $namespace >/dev/null 2>&1
     done
 
     if [ $? -eq 0 ]; then
@@ -131,8 +132,8 @@ function delete_mojaloop_layer() {
     cd "$previous_dir" || return 1
 }
 
-function mojaloop_postinstall_setup_ttk {
-    local ttk_files_dir=$MOJALOOP_TTK_FILES
+function mojaloop_postinstall_setup_ttk() {
+    local ttk_files_dir=$MOJALOOP_REPO_TTK_FILES_DIR
     log DEBUG "Configuring mojaloop testing toolkit"
     #copy in the TTK environment data if bluebank pod exists and is running
 
@@ -164,7 +165,7 @@ function mojaloop_postinstall_setup_ttk {
     fi
 }
 
-function check_mojaloop_urls {
+function check_mojaloop_urls() {
     log INFO "Checking URLs are active"
     for url in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
         if ! [[ $url =~ ^https?:// ]]; then
@@ -184,7 +185,7 @@ function check_mojaloop_urls {
     done
 }
 
-function check_mojaloop_health {
+function check_mojaloop_health() {
     # verify the health of the deployment
     for i in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
         #curl -s  http://$i/health
@@ -201,7 +202,7 @@ function check_mojaloop_health {
 
 function run_failed_sql_statements() {
     log INFO "Fixing operations app MySQL race condition"
-    operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
+    local operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
     # kubectl exec -it mysql-0 -n infra -- mysql -h mysql -uroot -pethieTieCh8ahv < apps/config/db_setup.sql
     mariadb -u$PH_MYSQL_USER -p$PH_MYSQL_PASSWORD -h $PH_MYSQL_HOST -P $PH_MYSQL_PORT <$PH_MYSQL_INIT_FILE
 
@@ -227,8 +228,9 @@ function run_failed_sql_statements() {
 function run_kong_migrations() {
     log DEBUG "Fixing Kong Migrations"
     #StoreKongPods
-    kongPods=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep g2p-sandbox-kong)
-    dBcontainerName="wait-for-db"
+    local kongPods=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep g2p-sandbox-kong)
+    local dBcontainerName="wait-for-db"
+    local podName initContainerStatus
     for pod in $kongPods; do
         podName=$(kubectl get pod $pod --no-headers -o custom-columns=":metadata.labels.app" -n $PH_NAMESPACE)
         if [[ "$podName" == "g2p-sandbox-kong" ]]; then
@@ -266,21 +268,19 @@ function post_paymenthub_deployment_script() {
     # Run migrations in Kong Pod
     # Now using kong-init-migrations pod to run migrations
     run_kong_migrations
-
 }
 
 function configure_mojaloop_manifests_values() {
     log DEBUG "Configuring mojaloop manifests"
-    local json_file="$DEPLOY_DIR/mojaloop/mojaloop_values.json"
-    local property_name
-    local old_value
-    local new_value
+    local json_file="$DEPLOY_DIR/$MOJALOOP_NAME/mojaloop_values.json"
+    local property_name old_value new_value
+    local layer_deploy_dir layer_source_dir layer_dir
 
     log INFO "Copy mojaloop manifests to deployment"
     for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_dir="${MOJALOOP_LAYERS[index]}"
-        layer_source_dir="$MOJALOOP_MANIFESTS_DIR/$layer_dir"
-        copy_to_deploy_dir "$layer_source_dir" "$layer_dir"
+        layer_deploy_dir="$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+        layer_source_dir="$MOJALOOP_REPO_MANIFESTS_DIR/${MOJALOOP_LAYERS[index]}"
+        copy_to_deploy_dir "$layer_source_dir" "$layer_deploy_dir"
     done
 
     jq -c '.[]' "$json_file" | while read -r json_object; do
@@ -291,7 +291,7 @@ function configure_mojaloop_manifests_values() {
 
         log DEBUG "Configure $property_name in mojaloop manifests"
         for index in "${!MOJALOOP_LAYERS[@]}"; do
-            layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
+            layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
             for file_name in $(find $layer_dir -type f); do
                 replace_values_in_file "$file_name" "$old_value" "$new_value"
             done
@@ -306,9 +306,10 @@ function configure_mojaloop_manifests_values() {
 }
 
 function deploy_mojaloop_layers() {
+    local layer_dir
     for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
-        log INFO "Deploying files in $layer_dir"
+        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+        log INFO "Deploying layer $layer_dir"
         install_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
     done
 }
@@ -316,7 +317,7 @@ function deploy_mojaloop_layers() {
 function deploy_mojaloop() {
     log DEBUG "Deploying mojaloop application manifests"
     create_namespace "$MOJALOOP_NAMESPACE"
-    clone_repo "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$APPS_DIR" "$MOJALOOP_REPO_NAME"
+    clone_repository "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$REPO_DIR" "$MOJALOOP_NAME"
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
 
@@ -332,17 +333,14 @@ function deploy_mojaloop() {
     check_mojaloop_health
 }
 
-function setup_paymenthub_env_vars {
+function setup_paymenthub_env_vars() {
     log DEBUG "Setting up paymenthub environment variables"
-    local property_name
-    local old_value
-    local new_value
-    local json_file
-    local values_file
+    local property_name old_value new_value
+    local json_file values_file
 
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    local tenant_prop_file="$PH_DIR/config/application-tenantsConnection.properties"
+    local tenant_prop_file="$PH_REPO/config/application-tenantsConnection.properties"
     json_file="$DEPLOY_DIR/paymenthub/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
@@ -368,7 +366,7 @@ function setup_paymenthub_env_vars {
 }
 
 function configure_paymenthub() {
-    local ph_chart_dir="$APPS_DIR/$PH_REPO_NAME/helm"
+    local ph_chart_dir="$APPS_DIR/$PH_NAME/helm"
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
@@ -412,11 +410,11 @@ function configure_paymenthub() {
 function deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
-    clone_repo "$PH_BRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_REPO_NAME"
+    clone_repository "$PH_BRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_NAME"
     setup_paymenthub_env_vars
     configure_paymenthub
 
-    helm_deploy_dir  "$PH_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -438,7 +436,7 @@ function update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
 
-    helm_deploy_dir "$PH_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
 
     log OK "==========================="
     log OK "Paymenthub updated."
@@ -478,14 +476,15 @@ function uninstall_paymenthub() {
 
 function uninstall_mojaloop() {
     log WARNING "Uninstalling mojaloop..."
+    local layer_dir
     for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_dir="$DEPLOY_DIR/${MOJALOOP_LAYERS[index]}"
+        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
         delete_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
     done
     su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 }
 
-function uninstall_apps {
+function uninstall_apps() {
     log WARNING "Uninstalling all deployments..."
     uninstall_infrastructure
     uninstall_paymenthub
@@ -493,7 +492,7 @@ function uninstall_apps {
     log WARNING "Deployments uninstalled."
 }
 
-function print_end_message {
+function print_end_message() {
     log OK "==========================="
     log OK "INSTALLATION COMPLETED."
     log OK "==========================="
@@ -504,7 +503,7 @@ function print_end_message {
     log "kubectl get pods -n paymenthub # Paymenthub"
 }
 
-function deploy_apps {
+function deploy_apps() {
     deploy_infrastructure
     deploy_paymenthub
     deploy_mojaloop
