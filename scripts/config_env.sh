@@ -6,13 +6,13 @@
 source ./apps/env.sh
 source ./scripts/logger.sh
 
-function check_arch_ok() {
+check_arch_ok() {
     if [[ ! "$k8s_arch" == "x86_64" ]]; then
         log WARNING "This installation works properly with x86_64"
     fi
 }
 
-function check_resources_ok() {
+check_resources_ok() {
     # Get the total amount of installed RAM in GB
     local total_ram=$(free -g | awk '/^Mem:/{print $2}')
     # Get the current free space on the root filesystem in GB
@@ -32,7 +32,7 @@ function check_resources_ok() {
     fi
 }
 
-function set_linux_os_distro() {
+set_linux_os_distro() {
     LINUX_VERSION="Unknown"
     if [ -x "/usr/bin/lsb_release" ]; then
         LINUX_OS=$(lsb_release --d | perl -ne 'print  if s/^.*Ubuntu.*(\d+).(\d+).*$/Ubuntu/')
@@ -43,7 +43,7 @@ function set_linux_os_distro() {
     log INFO "Linux OS is [$LINUX_OS]"
 }
 
-function check_os_ok() {
+check_os_ok() {
     log INFO "Checking OS distro"
     set_linux_os_distro
     if [[ ! $LINUX_OS == "Ubuntu" ]]; then
@@ -52,7 +52,7 @@ function check_os_ok() {
     fi
 }
 
-function do_k3s_install() {
+do_k3s_install() {
     log INFO "===================================================================="
     log INFO " Installing Kubernetes k3s engine and tools (helm/ingress etc)"
     log INFO "===================================================================="
@@ -137,7 +137,7 @@ function do_k3s_install() {
 
 }
 
-function configure_microk8s() {
+configure_microk8s() {
     log INFO "Configure microK8s..."
 
     log DEBUG "Waiting microk8s to come online..."
@@ -182,7 +182,7 @@ function configure_microk8s() {
     log OK "Microk8s configuration complete"
 }
 
-function install_prerequisites() {
+install_prerequisites() {
     log DEBUG "Checking prerequisites..."
 
     if [[ $LINUX_OS == "Ubuntu" ]]; then
@@ -260,7 +260,7 @@ function install_prerequisites() {
     fi
 }
 
-function add_hosts {
+add_hosts() {
     log INFO "Updating hosts file"
     ENDPOINTSLIST=(127.0.0.1
         mongohost.local mongoexpress.local vnextadmin.local elasticsearch.local kafkaconsole.local fspiop.local
@@ -279,7 +279,7 @@ function add_hosts {
     ping -c 2 vnextadmin
 }
 
-function install_k8s_tools {
+install_k8s_tools() {
     # Check if kubens is installed
     if ! command -v kubens &>/dev/null; then
         log DEBUG "Installing kubernetes tools: kubens and kustomize\n" \
@@ -292,7 +292,7 @@ function install_k8s_tools {
     fi
 }
 
-function add_helm_repos {
+add_helm_repos() {
     # see readme at https://github.com/mojaloop/helm for required helm libs
     log INFO "Add the helm repositories"
     su - $k8s_user -c "helm repo add kiwigrid https://kiwigrid.github.io" >/dev/null 2>&1
@@ -311,7 +311,7 @@ function add_helm_repos {
     log INFO "Helm repos added and updated."
 }
 
-function verify_user {
+verify_user() {
     log INFO "k8s user is $k8s_user"
     # ensure that the user for k8s exists
     if [ -z ${k8s_user+x} ]; then
@@ -333,7 +333,7 @@ function verify_user {
     fi
 }
 
-function check_k8s_installed() {
+check_k8s_installed() {
     log INFO "Checking cluster is available and ready for kubectl"
     k8s_ready=$(su - $k8s_user -c "kubectl get nodes" | perl -ne 'print  if s/^.*Ready.*$/Ready/')
     if [[ ! "$k8s_ready" == "Ready" ]]; then
@@ -343,13 +343,13 @@ function check_k8s_installed() {
     log OK "Kubernetes installed and ready..."
 }
 
-function print_end_message() {
+print_end_message() {
     echo -e "\n${GREEN}============================"
     echo -e "Installation complete"
     echo -e "============================${RESET}\n"
 }
 
-function uninstall_setup() {
+uninstall_setup() {
     log WARNING "Rolling back environment setup..."
     log INFO "Packages added externally require manual uninstall: \n" \
         " - docker : sudo snap remove docker \n" \
@@ -388,7 +388,7 @@ function uninstall_setup() {
     log WARNING "Rollback environment setup completed."
 }
 
-function setup_env() {
+setup_env() {
     k8s_distro="$1"
 
     # ensure we are running as root

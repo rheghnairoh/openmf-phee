@@ -6,7 +6,7 @@
 source ./scripts/config_env.sh
 source ./scripts/deployer.sh
 
-function welcome() {
+welcome() {
     log " \n"
     log "===================================================="
     log "       Payment Hub EE x Mojaloop Installer          "
@@ -14,9 +14,9 @@ function welcome() {
     log " \n"
 }
 
-function showUsage() {
+showUsage() {
     if [ $# -ne 0 ]; then
-        echo "Incorrect number of arguments passed to function $0"
+        echo "Incorrect number of arguments passed to $0"
         exit 1
     else
         echo "USAGE: $0 -u [user]
@@ -43,7 +43,7 @@ EXAMPLES:
 
 }
 
-function getoptions() {
+getoptions() {
     while getopts "u:hH" OPTION; do
         case "${OPTION}" in
         u)
@@ -68,8 +68,8 @@ function getoptions() {
     fi
 }
 
-# this function is also called when Ctrl-C is sent
-function uninstall() {
+# this is also called when Ctrl-C is sent
+uninstall() {
     log WARNING "Performing graceful uninstall"
     uninstall_apps
     uninstall_setup
@@ -79,7 +79,7 @@ function uninstall() {
     exit 2
 }
 
-function trapCtrlC {
+trapCtrlC {
     log ERROR "Ctrl-C detected. Terminating installation..."
     uninstall
 }
@@ -91,7 +91,7 @@ trap "trapCtrlC" 2
 ###########################################################################
 # MAIN
 ###########################################################################
-function main() {
+main() {
     # set env vars
     k8s_distro="${K8S_DISTRO:-microk8s}"
     k8s_user_home=""

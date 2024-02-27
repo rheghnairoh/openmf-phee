@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 
-function set_logfiles() {
+set_logfiles() {
   # set the logfiles
   if [ ! -z ${logfiles+x} ]; then 
     LOGFILE="/tmp/$logfiles.log"
@@ -27,7 +27,7 @@ function set_logfiles() {
   printf "==> logfiles can be found at %s and %s \n" "$LOGFILE" "$ERRFILE"
 }
 
-function log() {
+log() {
   local logLevel=$1
   shift
   local logMessage=$@

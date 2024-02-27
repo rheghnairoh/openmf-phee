@@ -10,7 +10,7 @@ source ./scripts/logger.sh
 # HELPER FUNCTIONS
 ########################################################################
 
-function replace_values_in_file() {
+replace_values_in_file() {
     local file="$1"
     local old_value="$2"
     local new_value="$3"
@@ -36,7 +36,7 @@ function replace_values_in_file() {
     fi
 }
 
-function rename_off_files_to_yaml() {
+rename_off_files_to_yaml() {
     local folder="$1"
     local previous_dir="$PWD" # Save the current working directory
 
@@ -62,7 +62,7 @@ function rename_off_files_to_yaml() {
     cd "$previous_dir" || return 1
 }
 
-function create_secret() {
+create_secret() {
     local namespace="$1"
     log INFO "Creating secrets in $namespace namespace"
     if make secrets -e NAMESPACE="$namespace" >>/dev/null 2>&1; then
@@ -74,7 +74,7 @@ function create_secret() {
     fi
 }
 
-function helm_deploy_dir() {
+helm_deploy_dir() {
     # Check if Helm is installed
     if ! command -v helm &>/dev/null; then
         log ERROR "Helm not installed. Please install Helm first."
@@ -136,7 +136,7 @@ function helm_deploy_dir() {
     cd - || exit 1
 }
 
-function create_namespace() {
+create_namespace() {
     local namespace=$1
     log DEBUG "Creating namespace $namespace"
     # Check if the namespace already exists
@@ -154,7 +154,7 @@ function create_namespace() {
     fi
 }
 
-function clone_repository() {
+clone_repository() {
     if [ "$#" -ne 4 ]; then
         log ERROR "Usage: clone_repository <branch> <repo_link> <target_directory> <cloned_directory_name>"
         return 1
@@ -193,7 +193,7 @@ function clone_repository() {
     cd - || return 1
 }
 
-function copy_to_deploy_dir() {
+copy_to_deploy_dir() {
     local from_path="$1"
     local to_path="$2"
     log INFO "Copying $from_path to $DEPLOY_DIR/$to_path"
