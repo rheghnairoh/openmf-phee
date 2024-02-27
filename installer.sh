@@ -79,7 +79,7 @@ uninstall() {
     exit 2
 }
 
-trapCtrlC {
+trapCtrlC() {
     log ERROR "Ctrl-C detected. Terminating installation..."
     uninstall
 }
