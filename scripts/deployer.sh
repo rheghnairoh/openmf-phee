@@ -14,7 +14,7 @@ apply_preinstall_env_vars() {
     set +a
 
     # create deploy dirs
-    mkdir -p "$DEPLOY_DIR/paymenthub"
+    mkdir -p "$DEPLOY_DIR/$PH_NAME"
     mkdir -p "$DEPLOY_DIR/$MOJALOOP_NAME"
 
     local file_name
@@ -22,9 +22,9 @@ apply_preinstall_env_vars() {
         file_name=$(basename ${file_path})
         envsubst <$file_path >$DEPLOY_DIR/$MOJALOOP_NAME/$file_name
     done
-    for file_path in $(find $APPS_DIR/paymenthub -type f); do
+    for file_path in $(find $APPS_DIR/$PH_NAME -type f); do
         file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/paymenthub/$file_name
+        envsubst <$file_path >$DEPLOY_DIR/$PH_NAME/$file_name
     done
 }
 
@@ -341,7 +341,7 @@ setup_paymenthub_env_vars() {
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
     local tenant_prop_file="$PH_REPO/config/application-tenantsConnection.properties"
-    json_file="$DEPLOY_DIR/paymenthub/tenant_connection_values.json"
+    json_file="$DEPLOY_DIR/$PH_NAME/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -351,12 +351,12 @@ setup_paymenthub_env_vars() {
     copy_to_deploy_dir "$tenant_prop_file" "application-tenantsConnection.properties"
 
     # setup ph env values
-    log INFO "Copy paymenthub values file to deployment"
-    copy_to_deploy_dir "$APPS_DIR/paymenthub/$PH_VALUES_FILE" "$PH_VALUES_FILE"
+    log INFO "Copy paymenthub app file to deployment"
+    copy_to_deploy_dir "$APPS_DIR/$PH_NAME" "$PH_NAME"
 
-    log DEBUG "Updating env variables in $PH_VALUES_FILE"
-    values_file="$DEPLOY_DIR/$PH_VALUES_FILE"
-    json_file="$DEPLOY_DIR/paymenthub/paymenthub_values.json"
+    log DEBUG "Updating env variables in $PH_NAME"
+    values_file="$PH_VALUES_FILE"
+    json_file="$DEPLOY_DIR/$PH_NAME/paymenthub_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
         old_value=$(echo "$json_object" | jq -r '.old_value')
@@ -366,7 +366,7 @@ setup_paymenthub_env_vars() {
 }
 
 configure_paymenthub() {
-    local ph_chart_dir="$APPS_DIR/$PH_NAME/helm"
+    local ph_chart_dir="$REPO_DIR/$PH_NAME/helm"
     local previous_dir="$PWD" # Save the current working directory
     log INFO "Configuring Payment Hub..."
 
@@ -410,11 +410,11 @@ configure_paymenthub() {
 deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
-    clone_repository "$PH_BRANCH" "$PH_REPO_LINK" "$APPS_DIR" "$PH_NAME"
+    clone_repository "$PH_BRANCH" "$PH_REPO_LINK" "$REPO_DIR" "$PH_NAME"
     setup_paymenthub_env_vars
     configure_paymenthub
 
-    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -436,7 +436,7 @@ update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
 
-    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$DEPLOY_DIR/$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "==========================="
     log OK "Paymenthub updated."

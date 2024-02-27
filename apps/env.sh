@@ -30,9 +30,8 @@ PH_NAMESPACE="paymenthub"
 PH_RELEASE_NAME="g2p-sandbox"
 PH_REPO_LINK="https://github.com/openMF/ph-ee-env-labs.git"
 PH_REPO="$REPO_DIR/$PH_NAME/helm/g2p-sandbox-fynarfin-demo"
-PH_VALUES_FILE="ph_values.yaml"
-PH_MYSQL_INIT_FILE="$APPS_DIR/$PH_NAME/db_setup.sql"
-# paymenthub env
+PH_VALUES_FILE="$DEPLOY_DIR/$PH_NAME/ph_values.yaml"
+PH_MYSQL_INIT_FILE="$DEPLOY_DIR/$PH_NAME/db_setup.sql"
 PH_HOSTNAME="counselorservice.sytes.net"
 PH_MESSAGE_GATEWAY_API_KEY=aadc326ccee4e35716352520d2ec367b
 PH_MESSAGE_GATEWAY_PROJECT_ID=AC7243e41db602c5ddde0cdb3537d7003f
