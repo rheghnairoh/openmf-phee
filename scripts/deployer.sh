@@ -7,25 +7,32 @@ source ./apps/env.sh
 source ./scripts/logger.sh
 source ./scripts/helper.sh
 
-apply_preinstall_env_vars() {
+predeploy_app_apply_env() {
+    if [ "$#" -ne 1 ]; then
+        log ERROR "Usage: predeploy_app_apply_env <deploy_dir> "
+        return 1
+    fi
+
+    local app_name="$1"
+    local app_dir="$DEPLOY_DIR/$app_name"
+    local temp_dir="${app_dir}_temp"
+
     log DEBUG "Substituting env variables in config files"
     set -a
     source $APPS_DIR/env.sh
     set +a
 
-    # create deploy dirs
-    mkdir -p "$DEPLOY_DIR/$PH_NAME"
-    mkdir -p "$DEPLOY_DIR/$MOJALOOP_NAME"
+    # create temp app dir
+    cp -r "$app_dir" "$temp_dir"
 
     local file_name
-    for file_path in $(find $APPS_DIR/$MOJALOOP_NAME -type f); do
+    for file_path in $(find $temp_dir -type f); do
         file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/$MOJALOOP_NAME/$file_name
+        envsubst <$file_path >$app_dir/$file_name
     done
-    for file_path in $(find $APPS_DIR/$PH_NAME -type f); do
-        file_name=$(basename ${file_path})
-        envsubst <$file_path >$DEPLOY_DIR/$PH_NAME/$file_name
-    done
+
+    # clean up
+    rm -rf "$temp_dir"
 }
 
 infra_restore_mongo_demo_data() {
@@ -63,7 +70,14 @@ infra_restore_mongo_demo_data() {
 deploy_infrastructure() {
     log DEBUG "Deploying infrastructure..."
     create_namespace $INFRA_NAMESPACE
-    helm_deploy_dir "$APPS_DIR/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+
+    # setup env values
+    log INFO "Copy $INFRA_NAME app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
+    predeploy_app_apply_env "$INFRA_NAME"
+
+    helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
+    
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -272,17 +286,21 @@ post_paymenthub_deployment_script() {
 
 configure_mojaloop_manifests_values() {
     log DEBUG "Configuring mojaloop manifests"
-    local json_file="$DEPLOY_DIR/$MOJALOOP_NAME/mojaloop_values.json"
-    local property_name old_value new_value
-    local layer_deploy_dir layer_source_dir layer_dir
+    # setup env values
+    log INFO "Copy $MOJALOOP_NAME app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$MOJALOOP_NAME" "$MOJALOOP_NAME"
+    predeploy_app_apply_env "$MOJALOOP_NAME"
 
-    log INFO "Copy mojaloop manifests to deployment"
+    log INFO "Copy mojaloop manifests for deployment"
     for index in "${!MOJALOOP_LAYERS[@]}"; do
         layer_deploy_dir="$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
         layer_source_dir="$MOJALOOP_REPO_MANIFESTS_DIR/${MOJALOOP_LAYERS[index]}"
         copy_to_deploy_dir "$layer_source_dir" "$layer_deploy_dir"
     done
 
+    local property_name old_value new_value
+    local layer_deploy_dir layer_source_dir layer_dir
+    local json_file="$DEPLOY_DIR/$MOJALOOP_NAME/mojaloop_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         # Extract attributes from the JSON object
         property_name=$(echo "$json_object" | jq -r '.property_name')
@@ -338,9 +356,14 @@ setup_paymenthub_env_vars() {
     local property_name old_value new_value
     local json_file values_file
 
+    # setup ph env values
+    log INFO "Copy paymenthub app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$PH_NAME" "$PH_NAME"
+    predeploy_app_apply_env "$PH_NAME"
+
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
-    local tenant_prop_file="$PH_REPO/config/application-tenantsConnection.properties"
+    local tenant_prop_file="$PH_HELM_DIR/config/application-tenantsConnection.properties"
     json_file="$DEPLOY_DIR/$PH_NAME/tenant_connection_values.json"
     jq -c '.[]' "$json_file" | while read -r json_object; do
         property_name=$(echo "$json_object" | jq -r '.property_name')
@@ -349,10 +372,6 @@ setup_paymenthub_env_vars() {
         replace_values_in_file "$tenant_prop_file" "$old_value" "$new_value"
     done
     copy_to_deploy_dir "$tenant_prop_file" "application-tenantsConnection.properties"
-
-    # setup ph env values
-    log INFO "Copy paymenthub app file to deployment"
-    copy_to_deploy_dir "$APPS_DIR/$PH_NAME" "$PH_NAME"
 
     log DEBUG "Updating env variables in $PH_NAME"
     values_file="$PH_VALUES_FILE"
@@ -381,17 +400,20 @@ configure_paymenthub() {
 
     cd $ph_chart_dir || exit 1
 
-    # create secrets for paymenthub namespace and infra namespace
+    # create secrets for paymenthub namespace
     cd es-secret || exit 1
     log DEBUG "Creating elasticsearch secrets..."
     export ELASTICSEARCH_PASSWORD=$PH_ELASTICSEARCH_PASSWORD
     create_secret "$PH_NAMESPACE"
     # create_secret "$INFRA_NAMESPACE"
+    # create_secret "$MOJALOOP_NAMESPACE"
+
     cd ..
     cd kibana-secret || exit 1
     log DEBUG "Creating kibana secrets..."
     create_secret "$PH_NAMESPACE"
     # create_secret "$INFRA_NAMESPACE"
+    # create_secret "$MOJALOOP_NAMESPACE"
 
     # cd ..
     # kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
@@ -411,10 +433,11 @@ deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
     clone_repository "$PH_BRANCH" "$PH_REPO_LINK" "$REPO_DIR" "$PH_NAME"
+    
     setup_paymenthub_env_vars
     configure_paymenthub
 
-    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_HELM_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "============================"
     log OK "Paymenthub deployed."
@@ -426,7 +449,13 @@ deploy_paymenthub() {
 
 update_infrastructure() {
     log DEBUG "Updating infrastructure"
-    helm_deploy_dir "$APPS_DIR/infra" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME"
+    # setup env values
+    log INFO "Copy $INFRA_NAME app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
+    predeploy_app_apply_env "$INFRA_NAME"
+
+    helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
+
     log OK "==========================="
     log OK "Infrastructure updated."
     log OK "==========================="
@@ -436,7 +465,7 @@ update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
 
-    helm_deploy_dir "$PH_REPO" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
+    helm_deploy_dir "$PH_HELM_DIR" "$PH_NAMESPACE" "$PH_RELEASE_NAME" "$PH_VALUES_FILE"
 
     log OK "==========================="
     log OK "Paymenthub updated."

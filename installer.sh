@@ -108,8 +108,6 @@ main() {
     mode="${@:$OPTIND:1}"
     application="${@:$OPTIND+1:1}"
 
-    apply_preinstall_env_vars
-
     if [ $mode == "install" ]; then
         echo -e "${YELLOW}"
         echo -e "===================================================================="

@@ -400,6 +400,10 @@ setup_env() {
     # make tmp dir
     if [ ! -d "$DEPLOY_DIR" ]; then
         mkdir -p "$DEPLOY_DIR"
+        # create deploy dirs
+        mkdir -p "$DEPLOY_DIR/$PH_NAME"
+        mkdir -p "$DEPLOY_DIR/$MOJALOOP_NAME"
+        mkdir -p "$DEPLOY_DIR/$INFRA_NAME"
     fi
 
     check_arch_ok
