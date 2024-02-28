@@ -17,7 +17,7 @@ predeploy_app_apply_env() {
     local app_dir="$DEPLOY_DIR/$app_name"
     local temp_dir="${app_dir}_temp"
 
-    log DEBUG "Substituting env variables in config files"
+    log DEBUG "Substituting env variables in $app_dir"
     set -a
     source $APPS_DIR/env.sh
     set +a
@@ -28,6 +28,7 @@ predeploy_app_apply_env() {
     local file_name
     for file_path in $(find $temp_dir -type f); do
         file_name=$(basename ${file_path})
+        log INFO "Apply env to $file_name"
         envsubst <$file_path >$app_dir/$file_name
     done
 
