@@ -1,8 +1,8 @@
 [
   {
-    "property_name": "MYSQL_HOST",
+    "property_name": "PH_MYSQL_HOST",
     "old_value": "operationsmysql.sandbox.fynarfin.io",
-    "new_value": "$MYSQL_HOST"
+    "new_value": "$PH_MYSQL_HOST"
   },
   {
     "property_name": "PH_HOSTNAME",
