@@ -142,7 +142,7 @@ mongodb:
   #   tag: 7.0.5-debian-12-r5
   # use image < v5 if cpu does not support AVX
   image:
-    tag: 4.4.15-debian-10-r8
+    tag: 4.2.21-debian-10-r8
 
   fullnameOverride: "mongodb"
   auth:
