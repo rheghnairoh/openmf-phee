@@ -40,11 +40,11 @@ infra_restore_mongo_demo_data() {
     local mongo_data_dir=$MOJALOOP_REPO_MONGO_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
 
-    local pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    local pod_status=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $3}')
     while [[ "$pod_status" != "Running" ]]; do
         log INFO "MongoDB seems not running...waiting for pods to come up."
         sleep 5
-        pod_status=$(kubectl get pods mongodb-0 --namespace $INFRA_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+        pod_status=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $3}')
     done
 
     #   error_message=" restoring the mongo database data failed "
@@ -52,7 +52,8 @@ infra_restore_mongo_demo_data() {
     log INFO "Restoring demonstration/test data and ttk configs"
     # temporary measure to inject base participants data into switch
     local mongopod=$(kubectl get pods --namespace $INFRA_NAMESPACE | grep -i mongodb | awk '{print $1}')
-    local mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
+    # local mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.MONGO_INITDB_ROOT_PASSWORD}' | base64 -d)
+    local mongo_root_pw=$(kubectl get secret mongodb -n $INFRA_NAMESPACE -o jsonpath='{.data.mongodb-root-password}' | base64 -d)
     #kubectl cp $mongo_data_dir/mongodata.gz $mongopod:/tmp >/dev/null 2>&1 # copy the demo / test data into the mongodb pod
     log INFO "$mongo_data_dir/mongodump-beta.gz"
     kubectl cp $mongo_data_dir/mongodump-beta.gz $mongopod:/tmp/mongodump.gz >/dev/null 2>&1 # copy the demo / test data into the mongodb pod

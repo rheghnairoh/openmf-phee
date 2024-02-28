@@ -105,12 +105,13 @@ ph-ee-g2psandbox:
       ams_local_customer_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_auth_host: "https://fynams.sandbox.fynarfin.io/"
       ams_local_loan_host: "https://fynams.sandbox.fynarfin.io/"
-      limits:
-        memory: "2G"
-        cpu: "1"
-      requests:
-        memory: "516M"
-        cpu: "500m"
+      resources:
+        limits:
+          memory: "2G"
+          cpu: "1"
+        requests:
+          memory: "516M"
+          cpu: "500m"
       ingress:
         enabled: true 
         hosts:
