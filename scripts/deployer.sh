@@ -116,11 +116,11 @@ check_mojaloop_urls() {
             if curl --output /dev/null --silent --head --fail --write-out "%{http_code}" "$url" | grep -q "200\|301"; then
                 log INFO "      URL $url  [ ok ]"
             else
-                log WARNING "    ** Warning: URL $url [ not ok ]"
-                log WARNING "       (Status code: $(curl --output /dev/null --silent --head --fail --write-out "%{http_code}"))"
+                log WARNING "URL $url [ not ok ]"
+                log WARNING "(Status code: $(curl --output /dev/null --silent --head --fail --write-out "%{http_code}"))"
             fi
         else
-            log WARNING "  ** Warning : URL $url is not working."
+            log WARNING "URL $url is not working."
         fi
     done
 }
@@ -131,10 +131,10 @@ check_mojaloop_health() {
         #curl -s  http://$i/health
         if [[ $(curl -s --head --fail --write-out \"%{http_code}\" http://$i/health |
             perl -nle '$count++ while /\"status\":\"OK+/g; END {print $count}') -lt 1 ]]; then
-            log WARNING " ** Error: [curl -s http://$i/health] endpoint healthcheck failed **"
+            log WARNING "[curl -s http://$i/health] endpoint healthcheck failed"
             # exit 1
         else
-            log INFO "    curl -s http://$i/health is OK "
+            log INFO "curl -s http://$i/health is OK "
         fi
         sleep 2
     done
