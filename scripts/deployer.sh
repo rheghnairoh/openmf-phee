@@ -35,6 +35,7 @@ predeploy_app_apply_env() {
     rm -rf "$temp_dir"
 }
 
+# ===== INFRA =====
 infra_restore_mongo_demo_data() {
     local mongo_data_dir=$MOJALOOP_REPO_MONGO_DIR
     log INFO "Restoring mongo data from directory $mongo_data_dir"
@@ -81,6 +82,143 @@ deploy_infrastructure() {
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
+}
+
+update_infrastructure() {
+    log DEBUG "Updating infrastructure"
+    # setup env values
+    log INFO "Copy $INFRA_NAME app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
+    predeploy_app_apply_env "$INFRA_NAME"
+
+    helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
+
+    log OK "==========================="
+    log OK "Infrastructure updated."
+    log OK "==========================="
+}
+
+uninstall_infrastructure() {
+    log WARNING "Uninstalling infrastructure..."
+    su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME -n $INFRA_NAMESPACE "
+    su - $k8s_user -c "kubectl delete namespace $INFRA_NAMESPACE"
+}
+
+# ===== MOJALOOP =====
+check_mojaloop_urls() {
+    log INFO "Checking URLs are active"
+    for url in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
+        if ! [[ $url =~ ^https?:// ]]; then
+            url="http://$url"
+        fi
+
+        if curl --output /dev/null --silent --head --fail "$url"; then
+            if curl --output /dev/null --silent --head --fail --write-out "%{http_code}" "$url" | grep -q "200\|301"; then
+                log INFO "      URL $url  [ ok ]"
+            else
+                log WARNING "    ** Warning: URL $url [ not ok ]"
+                log WARNING "       (Status code: $(curl --output /dev/null --silent --head --fail --write-out "%{http_code}"))"
+            fi
+        else
+            log WARNING "  ** Warning : URL $url is not working."
+        fi
+    done
+}
+
+check_mojaloop_health() {
+    # verify the health of the deployment
+    for i in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
+        #curl -s  http://$i/health
+        if [[ $(curl -s --head --fail --write-out \"%{http_code}\" http://$i/health |
+            perl -nle '$count++ while /\"status\":\"OK+/g; END {print $count}') -lt 1 ]]; then
+            log WARNING " ** Error: [curl -s http://$i/health] endpoint healthcheck failed **"
+            # exit 1
+        else
+            log INFO "    curl -s http://$i/health is OK "
+        fi
+        sleep 2
+    done
+}
+
+mojaloop_postinstall_setup_ttk() {
+    local ttk_files_dir=$MOJALOOP_REPO_TTK_FILES_DIR
+    log DEBUG "Configuring mojaloop testing toolkit"
+    #copy in the TTK environment data if bluebank pod exists and is running
+
+    bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    while [[ "$bb_pod_status" != "Running" ]]; do
+        log INFO "TTK seems not running...waiting for pods to come up."
+        sleep 5
+        bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
+    done
+    if [[ "$bb_pod_status" == "Running" ]]; then
+        log DEBUG "Configure testing toolkit (ttk) data and environment..."
+        ####   bluebank  ###
+        log INFO "=====bluebank====="
+        ttk_pod_env_dest="/opt/app/examples/environments"
+        ttk_pod_spec_dest="/opt/app/spec_files"
+        kubectl cp $ttk_files_dir/environment/hub_local_environment.json bluebank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
+        kubectl cp $ttk_files_dir/environment/dfsp_local_environment.json bluebank-backend-0:$ttk_pod_env_dest/dfsp_local_environment.json
+        kubectl cp $ttk_files_dir/spec_files/user_config_bluebank.json bluebank-backend-0:$ttk_pod_spec_dest/user_config.json
+        kubectl cp $ttk_files_dir/spec_files/default.json bluebank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
+
+        ####  greenbank  ###
+        log INFO "=====greenbank====="
+        kubectl cp $ttk_files_dir/environment/hub_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
+        kubectl cp $ttk_files_dir/environment/dfsp_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/dfsp_local_environment.json
+        kubectl cp $ttk_files_dir/spec_files/user_config_greenbank.json greenbank-backend-0:$ttk_pod_spec_dest/user_config.json
+        kubectl cp $ttk_files_dir/spec_files/default.json greenbank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
+
+        log OK "Configure TTK complete."
+    fi
+}
+
+configure_mojaloop_manifests_values() {
+    log DEBUG "Configuring mojaloop manifests"
+    # setup env values
+    log INFO "Copy $MOJALOOP_NAME app for deployment"
+    copy_to_deploy_dir "$APPS_DIR/$MOJALOOP_NAME" "$MOJALOOP_NAME"
+    predeploy_app_apply_env "$MOJALOOP_NAME"
+
+    log INFO "Copy mojaloop manifests for deployment"
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_deploy_dir="$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+        layer_source_dir="$MOJALOOP_REPO_MANIFESTS_DIR/${MOJALOOP_LAYERS[index]}"
+        copy_to_deploy_dir "$layer_source_dir" "$layer_deploy_dir"
+    done
+
+    local property_name old_value new_value
+    local layer_deploy_dir layer_source_dir layer_dir
+    local json_file="$DEPLOY_DIR/$MOJALOOP_NAME/mojaloop_values.json"
+    jq -c '.[]' "$json_file" | while read -r json_object; do
+        # Extract attributes from the JSON object
+        property_name=$(echo "$json_object" | jq -r '.property_name')
+        old_value=$(echo "$json_object" | jq -r '.old_value')
+        new_value=$(echo "$json_object" | jq -r ".new_value")
+
+        log DEBUG "Configure $property_name in mojaloop manifests"
+        for index in "${!MOJALOOP_LAYERS[@]}"; do
+            layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+            for file_name in $(find $layer_dir -type f); do
+                replace_values_in_file "$file_name" "$old_value" "$new_value"
+            done
+        done
+    done
+
+    if [ $? -eq 0 ]; then
+        log INFO "Mojaloop manifests edited successfully"
+    else
+        log ERROR "Could not edit manifests."
+    fi
+}
+
+deploy_mojaloop_layers() {
+    local layer_dir
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+        log INFO "Deploying layer $layer_dir"
+        install_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
+    done
 }
 
 install_mojaloop_layer() {
@@ -146,74 +284,45 @@ delete_mojaloop_layer() {
     cd "$previous_dir" || return 1
 }
 
-mojaloop_postinstall_setup_ttk() {
-    local ttk_files_dir=$MOJALOOP_REPO_TTK_FILES_DIR
-    log DEBUG "Configuring mojaloop testing toolkit"
-    #copy in the TTK environment data if bluebank pod exists and is running
+deploy_mojaloop() {
+    log DEBUG "Deploying mojaloop application manifests"
+    create_namespace "$MOJALOOP_NAMESPACE"
+    clone_repository "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$REPO_DIR" "$MOJALOOP_NAME"
+    configure_mojaloop_manifests_values
+    deploy_mojaloop_layers
 
-    bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
-    while [[ "$bb_pod_status" != "Running" ]]; do
-        log INFO "TTK seems not running...waiting for pods to come up."
-        sleep 5
-        bb_pod_status=$(kubectl get pods bluebank-backend-0 --namespace $MOJALOOP_NAMESPACE --no-headers 2>/dev/null | awk '{print $3}')
-    done
-    if [[ "$bb_pod_status" == "Running" ]]; then
-        log DEBUG "Configure testing toolkit (ttk) data and environment..."
-        ####   bluebank  ###
-        log INFO "=====bluebank====="
-        ttk_pod_env_dest="/opt/app/examples/environments"
-        ttk_pod_spec_dest="/opt/app/spec_files"
-        kubectl cp $ttk_files_dir/environment/hub_local_environment.json bluebank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
-        kubectl cp $ttk_files_dir/environment/dfsp_local_environment.json bluebank-backend-0:$ttk_pod_env_dest/dfsp_local_environment.json
-        kubectl cp $ttk_files_dir/spec_files/user_config_bluebank.json bluebank-backend-0:$ttk_pod_spec_dest/user_config.json
-        kubectl cp $ttk_files_dir/spec_files/default.json bluebank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
+    log OK "============================"
+    log OK "Mojaloop deployed."
+    log OK "============================"
 
-        ####  greenbank  ###
-        log INFO "=====greenbank====="
-        kubectl cp $ttk_files_dir/environment/hub_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/hub_local_environment.json
-        kubectl cp $ttk_files_dir/environment/dfsp_local_environment.json greenbank-backend-0:$ttk_pod_env_dest/dfsp_local_environment.json
-        kubectl cp $ttk_files_dir/spec_files/user_config_greenbank.json greenbank-backend-0:$ttk_pod_spec_dest/user_config.json
-        kubectl cp $ttk_files_dir/spec_files/default.json greenbank-backend-0:$ttk_pod_spec_dest/rules_callback/default.json
+    log DEBUG "Run postinstall for mojaloop when all pods are running. \n" \
+        "     sudo $0 -u $USER postinstall mojaloop"
 
-        log OK "Configure TTK complete."
-    fi
+    # mojaloop_postinstall_setup_ttk
+    check_mojaloop_urls
+    check_mojaloop_health
 }
 
-check_mojaloop_urls() {
-    log INFO "Checking URLs are active"
-    for url in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
-        if ! [[ $url =~ ^https?:// ]]; then
-            url="http://$url"
-        fi
-
-        if curl --output /dev/null --silent --head --fail "$url"; then
-            if curl --output /dev/null --silent --head --fail --write-out "%{http_code}" "$url" | grep -q "200\|301"; then
-                log INFO "      URL $url  [ ok ]"
-            else
-                log WARNING "    ** Warning: URL $url [ not ok ]"
-                log WARNING "       (Status code: $(curl --output /dev/null --silent --head --fail --write-out "%{http_code}"))"
-            fi
-        else
-            log WARNING "  ** Warning : URL $url is not working."
-        fi
-    done
+update_mojaloop() {
+    log DEBUG "Updating mojaloop"
+    configure_mojaloop_manifests_values
+    deploy_mojaloop_layers
+    log OK "==========================="
+    log OK "Mojaloop updated."
+    log OK "==========================="
 }
 
-check_mojaloop_health() {
-    # verify the health of the deployment
-    for i in "${EXTERNAL_ENDPOINTS_LIST[@]}"; do
-        #curl -s  http://$i/health
-        if [[ $(curl -s --head --fail --write-out \"%{http_code}\" http://$i/health |
-            perl -nle '$count++ while /\"status\":\"OK+/g; END {print $count}') -lt 1 ]]; then
-            log WARNING " ** Error: [curl -s http://$i/health] endpoint healthcheck failed **"
-            # exit 1
-        else
-            log INFO "    curl -s http://$i/health is OK "
-        fi
-        sleep 2
+uninstall_mojaloop() {
+    log WARNING "Uninstalling mojaloop..."
+    local layer_dir
+    for index in "${!MOJALOOP_LAYERS[@]}"; do
+        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
+        delete_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
     done
+    su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
 }
 
+# ===== PAYMENTHUB =====
 run_failed_sql_statements() {
     log INFO "Fixing operations app MySQL race condition"
     local operationsDeplName=$(kubectl get deploy --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep operations-app)
@@ -238,8 +347,8 @@ run_failed_sql_statements() {
     fi
 }
 
-#Function to run kong migrations in Kong init container
 run_kong_migrations() {
+    #Function to run kong migrations in Kong init container
     log DEBUG "Fixing Kong Migrations"
     #StoreKongPods
     local kongPods=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep g2p-sandbox-kong)
@@ -282,73 +391,6 @@ post_paymenthub_deployment_script() {
     # Run migrations in Kong Pod
     # Now using kong-init-migrations pod to run migrations
     run_kong_migrations
-}
-
-configure_mojaloop_manifests_values() {
-    log DEBUG "Configuring mojaloop manifests"
-    # setup env values
-    log INFO "Copy $MOJALOOP_NAME app for deployment"
-    copy_to_deploy_dir "$APPS_DIR/$MOJALOOP_NAME" "$MOJALOOP_NAME"
-    predeploy_app_apply_env "$MOJALOOP_NAME"
-
-    log INFO "Copy mojaloop manifests for deployment"
-    for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_deploy_dir="$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
-        layer_source_dir="$MOJALOOP_REPO_MANIFESTS_DIR/${MOJALOOP_LAYERS[index]}"
-        copy_to_deploy_dir "$layer_source_dir" "$layer_deploy_dir"
-    done
-
-    local property_name old_value new_value
-    local layer_deploy_dir layer_source_dir layer_dir
-    local json_file="$DEPLOY_DIR/$MOJALOOP_NAME/mojaloop_values.json"
-    jq -c '.[]' "$json_file" | while read -r json_object; do
-        # Extract attributes from the JSON object
-        property_name=$(echo "$json_object" | jq -r '.property_name')
-        old_value=$(echo "$json_object" | jq -r '.old_value')
-        new_value=$(echo "$json_object" | jq -r ".new_value")
-
-        log DEBUG "Configure $property_name in mojaloop manifests"
-        for index in "${!MOJALOOP_LAYERS[@]}"; do
-            layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
-            for file_name in $(find $layer_dir -type f); do
-                replace_values_in_file "$file_name" "$old_value" "$new_value"
-            done
-        done
-    done
-
-    if [ $? -eq 0 ]; then
-        log INFO "Mojaloop manifests edited successfully"
-    else
-        log ERROR "Could not edit manifests."
-    fi
-}
-
-deploy_mojaloop_layers() {
-    local layer_dir
-    for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
-        log INFO "Deploying layer $layer_dir"
-        install_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
-    done
-}
-
-deploy_mojaloop() {
-    log DEBUG "Deploying mojaloop application manifests"
-    create_namespace "$MOJALOOP_NAMESPACE"
-    clone_repository "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$REPO_DIR" "$MOJALOOP_NAME"
-    configure_mojaloop_manifests_values
-    deploy_mojaloop_layers
-
-    log OK "============================"
-    log OK "Mojaloop deployed."
-    log OK "============================"
-
-    log DEBUG "Run postinstall for mojaloop when all pods are running. \n" \
-        "     sudo $0 -u $USER postinstall mojaloop"
-
-    # mojaloop_postinstall_setup_ttk
-    check_mojaloop_urls
-    check_mojaloop_health
 }
 
 setup_paymenthub_env_vars() {
@@ -447,20 +489,6 @@ deploy_paymenthub() {
         "     sudo $0 -u $USER postinstall paymenthub"
 }
 
-update_infrastructure() {
-    log DEBUG "Updating infrastructure"
-    # setup env values
-    log INFO "Copy $INFRA_NAME app for deployment"
-    copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
-    predeploy_app_apply_env "$INFRA_NAME"
-
-    helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
-
-    log OK "==========================="
-    log OK "Infrastructure updated."
-    log OK "==========================="
-}
-
 update_paymenthub() {
     log DEBUG "Updating paymenthub"
     setup_paymenthub_env_vars
@@ -472,54 +500,13 @@ update_paymenthub() {
     log OK "==========================="
 }
 
-update_mojaloop() {
-    log DEBUG "Updating mojaloop"
-    configure_mojaloop_manifests_values
-    deploy_mojaloop_layers
-    log OK "==========================="
-    log OK "Mojaloop updated."
-    log OK "==========================="
-}
-
-update_apps() {
-    log INFO "Updating all deployments"
-    update_infrastructure
-    update_paymenthub
-    update_mojaloop
-    log OK "==========================="
-    log OK "All deployments updated."
-    log OK "==========================="
-}
-
-uninstall_infrastructure() {
-    log WARNING "Uninstalling infrastructure..."
-    su - $k8s_user -c "helm uninstall $INFRA_RELEASE_NAME -n $INFRA_NAMESPACE "
-    su - $k8s_user -c "kubectl delete namespace $INFRA_NAMESPACE"
-}
-
 uninstall_paymenthub() {
     log WARNING "Uninstalling paymenthub ..."
     su - $k8s_user -c "helm uninstall $PH_RELEASE_NAME -n $PH_NAMESPACE"
     su - $k8s_user -c "kubectl delete namespace $PH_NAMESPACE"
 }
 
-uninstall_mojaloop() {
-    log WARNING "Uninstalling mojaloop..."
-    local layer_dir
-    for index in "${!MOJALOOP_LAYERS[@]}"; do
-        layer_dir="$DEPLOY_DIR/$MOJALOOP_NAME/${MOJALOOP_LAYERS[index]}"
-        delete_mojaloop_layer "$layer_dir" "$MOJALOOP_NAMESPACE"
-    done
-    su - $k8s_user -c "kubectl delete namespace $MOJALOOP_NAMESPACE"
-}
-
-uninstall_apps() {
-    log WARNING "Uninstalling all deployments..."
-    uninstall_infrastructure
-    uninstall_paymenthub
-    uninstall_mojaloop
-    log WARNING "Deployments uninstalled."
-}
+# ===== FULL STACK =====
 
 print_end_message() {
     log OK "==========================="
@@ -530,6 +517,24 @@ print_end_message() {
     log "kubectl get pods -n infra # Infrastructure"
     log "kubectl get pods -n mojaloop # Mojaloop"
     log "kubectl get pods -n paymenthub # Paymenthub"
+}
+
+uninstall_apps() {
+    log WARNING "Uninstalling all deployments..."
+    uninstall_infrastructure
+    uninstall_paymenthub
+    uninstall_mojaloop
+    log WARNING "Deployments uninstalled."
+}
+
+update_apps() {
+    log INFO "Updating all deployments"
+    update_infrastructure
+    update_paymenthub
+    update_mojaloop
+    log OK "==========================="
+    log OK "All deployments updated."
+    log OK "==========================="
 }
 
 deploy_apps() {
