@@ -138,8 +138,8 @@ mongodb:
   enabled: true
   persistence:
     enabled: true
-  image:
-    tag: 4.4.28
+  # image:
+  #   tag: 7.0.5-debian-12-r5
 
   fullnameOverride: "mongodb"
   auth:

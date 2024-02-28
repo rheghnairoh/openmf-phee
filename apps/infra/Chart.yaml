@@ -26,7 +26,7 @@ dependencies:
   alias: mongodb
   condition: mongodb.enabled
   repository: https://charts.bitnami.com/bitnami
-  version: 13.3.1
+  version: 14.12.2
 ## Mongo-express
 - name: mongo-express
   alias: mongo-express
