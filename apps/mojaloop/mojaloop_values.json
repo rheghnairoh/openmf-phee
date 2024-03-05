@@ -18,5 +18,10 @@
     "property_name": "REDIS_HOST",
     "old_value": "value: redis-master",
     "new_value": "value: g2p-sandbox-redis-master.paymenthub.svc.cluster.local"
+  },
+  {
+    "property_name": "TTK_CLIENT_VERSION",
+    "old_value": "image: ml-testing-toolkit-client-lib:vnext",
+    "new_value": "image: ml-testing-toolkit-client-lib:v1.2.2"
   }
 ]
