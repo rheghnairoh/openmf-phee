@@ -616,8 +616,10 @@ ph-ee-g2psandbox:
 
     redis:
       enabled: true
+      auth:
+        enabled: false
       replica:
-        replicaCount: 0
+        replicaCount: 1
 
     vouchers:
       enabled: true
