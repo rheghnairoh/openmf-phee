@@ -262,7 +262,7 @@ install_prerequisites() {
 
 add_hosts() {
     log INFO "Updating hosts file"
-    ENDPOINTSLIST=(127.0.0.1
+    ENDPOINTSLIST=(127.0.0.1 localhost
         mongohost.local mongoexpress.local vnextadmin.local elasticsearch.local kafkaconsole.local fspiop.local
         bluebank.local greenbank.local)
 
