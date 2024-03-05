@@ -270,13 +270,13 @@ add_hosts() {
 
     # Check if perl is available for replacing
     if ! command -v perl &>/dev/null; then
-        perl -p -i.bak -e 's/127\.0\.0\.1.*localhost.*$/$ENV{ENDPOINTS} /' /etc/hosts
+        sudo -E perl -p -i.bak -e 's/127\.0\.0\.1.*localhost.*$/$ENV{ENDPOINTS} /' /etc/hosts
     fi
 
     # TODO check the ping actually works > suggest cloud network rules if it doesn't
     #      also for cloud VMs might need to use something other than curl e.g. netcat ?
     # ping  -c 2 account-lookup-service-admin.local
-    ping -c 2 vnextadmin
+    # ping -c 2 vnextadmin.local
 }
 
 install_k8s_tools() {
