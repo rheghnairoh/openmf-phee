@@ -22,6 +22,6 @@
   {
     "property_name": "TTK_CLIENT_VERSION",
     "old_value": "image: ml-testing-toolkit-client-lib:vnext",
-    "new_value": "image: mojaloop/ml-testing-toolkit-client-lib:v1.2.2"
+    "new_value": "image: mojaloop\\/ml-testing-toolkit-client-lib:v1.2.2"
   }
 ]
