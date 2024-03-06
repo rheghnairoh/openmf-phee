@@ -459,8 +459,8 @@ configure_paymenthub() {
     # create_secret "$INFRA_NAMESPACE"
     # create_secret "$MOJALOOP_NAMESPACE"
 
-    # cd ..
-    # kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
+    cd ..
+    kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
     # check if the configuration was successful
     if [ $? -eq 0 ]; then
