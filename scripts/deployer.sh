@@ -459,6 +459,9 @@ configure_paymenthub() {
     # create_secret "$INFRA_NAMESPACE"
     # create_secret "$MOJALOOP_NAMESPACE"
 
+    # ph-ee-connector-channel pod requires redis-password secret key.
+    # redis set to auth.enabled=false because mojaloop requires no-auth redis.
+    # if redis is used with auth.enabled=false, no secret is created. We create manually
     cd ..
     kubectl create secret generic "${PH_RELEASE_NAME}-redis" --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
