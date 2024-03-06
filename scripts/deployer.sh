@@ -353,12 +353,12 @@ run_kong_migrations() {
     #Function to run kong migrations in Kong init container
     log DEBUG "Fixing Kong Migrations"
     #StoreKongPods
-    local kongPods=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep g2p-sandbox-kong)
+    local kongPods=$(kubectl get pods --no-headers -o custom-columns=":metadata.name" -n $PH_NAMESPACE | grep "${PH_RELEASE_NAME}-kong")
     local dBcontainerName="wait-for-db"
     local podName initContainerStatus
     for pod in $kongPods; do
         podName=$(kubectl get pod $pod --no-headers -o custom-columns=":metadata.labels.app" -n $PH_NAMESPACE)
-        if [[ "$podName" == "g2p-sandbox-kong" ]]; then
+        if [[ "$podName" == "${PH_RELEASE_NAME}-kong" ]]; then
             initContainerStatus=$(kubectl get pod $pod --no-headers -o custom-columns=":status.initContainerStatuses[0].ready" -n $PH_NAMESPACE)
             while [[ "$initContainerStatus" != "true" ]]; do
                 log INFO "Ready State: $initContainerStatus Waiting for status to become true ..."
@@ -460,7 +460,7 @@ configure_paymenthub() {
     # create_secret "$MOJALOOP_NAMESPACE"
 
     cd ..
-    kubectl create secret generic g2p-sandbox-redis --from-literal=redis-password="" -n "$PH_NAMESPACE"
+    kubectl create secret generic "${PH_RELEASE_NAME}-redis" --from-literal=redis-password="" -n "$PH_NAMESPACE"
 
     # check if the configuration was successful
     if [ $? -eq 0 ]; then
