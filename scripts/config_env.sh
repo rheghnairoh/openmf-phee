@@ -114,27 +114,6 @@ do_k3s_install() {
         log ERROR "** Error : helm install seems to have failed **"
         exit 1
     fi
-
-    #install nginx
-    log INFO "Installing nginx ingress chart and wait for it to be ready"
-    su - $k8s_user -c "helm install --wait --timeout 300s ingress-nginx ingress-nginx \
-                      --repo https://kubernetes.github.io/ingress-nginx \
-                      -f $MOJALOOP_REPO/packages/installer/manifests/infra/nginx-values.yaml" >/dev/null 2>&1
-    # TODO : check to ensure that the ingress is indeed running
-    nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
-
-    if [ -z "$nginx_pod_name" ]; then
-        log ERROR "** Error : helm install of nginx seems to have failed , no nginx pod found **"
-        exit 1
-    fi
-    # Check if the Nginx pod is running
-    if kubectl get pods $nginx_pod_name | grep -q "Running"; then
-        log INFO "Nginx running..."
-    else
-        log ERROR "** Error : helm install of nginx seems to have failed , nginx pod is not running  **"
-        exit 1
-    fi
-
 }
 
 configure_microk8s() {

@@ -7,9 +7,9 @@ source ./apps/env.sh
 source ./scripts/logger.sh
 source ./scripts/helper.sh
 
-predeploy_app_apply_env() {
+predeploy_apply_env_to_app() {
     if [ "$#" -ne 1 ]; then
-        log ERROR "Usage: predeploy_app_apply_env <deploy_dir> "
+        log ERROR "Usage: predeploy_apply_env_to_app <deploy_dir> "
         return 1
     fi
 
@@ -77,10 +77,10 @@ deploy_infrastructure() {
     # setup env values
     log INFO "Copy $INFRA_NAME app for deployment"
     copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
-    predeploy_app_apply_env "$INFRA_NAME"
+    predeploy_apply_env_to_app "$INFRA_NAME"
 
     helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
-    
+
     log OK "============================"
     log OK "Infrastructure deployed."
     log OK "============================"
@@ -91,7 +91,7 @@ update_infrastructure() {
     # setup env values
     log INFO "Copy $INFRA_NAME app for deployment"
     copy_to_deploy_dir "$APPS_DIR/$INFRA_NAME" "$INFRA_NAME"
-    predeploy_app_apply_env "$INFRA_NAME"
+    predeploy_apply_env_to_app "$INFRA_NAME"
 
     helm_deploy_dir "$INFRA_HELM_DIR" "$INFRA_NAMESPACE" "$INFRA_RELEASE_NAME" "$INFRA_VALUES_FILE"
 
@@ -180,7 +180,7 @@ configure_mojaloop_manifests_values() {
     # setup env values
     log INFO "Copy $MOJALOOP_NAME app for deployment"
     copy_to_deploy_dir "$APPS_DIR/$MOJALOOP_NAME" "$MOJALOOP_NAME"
-    predeploy_app_apply_env "$MOJALOOP_NAME"
+    predeploy_apply_env_to_app "$MOJALOOP_NAME"
 
     log INFO "Copy mojaloop manifests for deployment"
     for index in "${!MOJALOOP_LAYERS[@]}"; do
@@ -286,10 +286,31 @@ delete_mojaloop_layer() {
     cd "$previous_dir" || return 1
 }
 
+install_mojaloop_nginx_ingress_controller() {
+    log INFO "Installing nginx-ingress-controller for mojaloop..."
+    su - $k8s_user -c "helm install ingress-nginx ingress-nginx \
+                      --repo https://kubernetes.github.io/ingress-nginx \
+                      -f $MOJALOOP_REPO/packages/installer/manifests/infra/nginx-values.yaml" >/dev/null 2>&1
+    # Check to ensure that the ingress is indeed running
+    # nginx_pod_name=$(kubectl get pods | grep nginx | awk '{print $1}')
+
+    # if [ -z "$nginx_pod_name" ]; then
+    #     log ERROR "Helm install of nginx seems to have failed , no nginx pod found"
+    # fi
+    # # Check if the Nginx pod is running
+    # if kubectl get pods $nginx_pod_name | grep -q "Running"; then
+    #     log INFO "Nginx running..."
+    # else
+    #     log ERROR "Helm install of nginx seems to have failed , nginx pod is not running"
+    # fi
+
+}
+
 deploy_mojaloop() {
     log DEBUG "Deploying mojaloop application manifests"
     create_namespace "$MOJALOOP_NAMESPACE"
     clone_repository "$MOJALOOP_BRANCH" "$MOJALOOP_REPO_LINK" "$REPO_DIR" "$MOJALOOP_NAME"
+    install_mojaloop_nginx_ingress_controller
     configure_mojaloop_manifests_values
     deploy_mojaloop_layers
 
@@ -403,7 +424,7 @@ setup_paymenthub_env_vars() {
     # setup ph env values
     log INFO "Copy paymenthub app for deployment"
     copy_to_deploy_dir "$APPS_DIR/$PH_NAME" "$PH_NAME"
-    predeploy_app_apply_env "$PH_NAME"
+    predeploy_apply_env_to_app "$PH_NAME"
 
     # application-tenantsConnection.properties"
     log DEBUG "Updating tenant datasource connections in application-tenantsConnection.properties"
@@ -480,7 +501,7 @@ deploy_paymenthub() {
     log DEBUG "Deploying PaymentHub EE"
     create_namespace "$PH_NAMESPACE"
     clone_repository "$PH_BRANCH" "$PH_REPO_LINK" "$REPO_DIR" "$PH_NAME"
-    
+
     setup_paymenthub_env_vars
     configure_paymenthub
 
