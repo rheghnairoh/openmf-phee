@@ -35,3 +35,15 @@ kubectl delete pod --field-selector=status.phase==Failed
 git update-index --chmod=+x installer.sh # make installer.sh executable
 git ls-files --stage # check file mode 0755
 ```
+
+- View pod deployments
+
+```bash
+kubectl get deploy
+```
+
+- Restart pod deployment
+
+```bash
+kubectl rollout restart deploy/$podDeployName
+```
